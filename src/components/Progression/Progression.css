@@ -1,0 +1,12 @@
+.progression {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  width: 100%;
+  max-width: 700px;
+}
+
+.progression-empty {
+  color: var(--text);
+  font-size: 14px;
+}

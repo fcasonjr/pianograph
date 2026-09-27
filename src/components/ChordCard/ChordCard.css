@@ -1,0 +1,78 @@
+.chord-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.chord-card-name {
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.chord-card-remove {
+  position: absolute;
+  top: 2px;
+  right: 4px;
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.chord-card-remove:hover {
+  color: var(--text-h);
+}
+
+.mini-piano {
+  --mini-key-width: 8px;
+  --mini-black-key-width: 5px;
+
+  position: relative;
+  display: flex;
+  width: calc(var(--key-count) * var(--mini-key-width));
+  height: 36px;
+}
+
+.mini-key {
+  box-sizing: border-box;
+  border: 1px solid #2a2a2a;
+}
+
+.mini-key-white {
+  flex: 0 0 var(--mini-key-width);
+  height: 100%;
+  background: #fdfdfd;
+  border-radius: 0 0 2px 2px;
+}
+
+.mini-key-white.active {
+  background: #c4b5fd;
+}
+
+.mini-key-black {
+  position: absolute;
+  top: 0;
+  left: calc(
+    (var(--after-index) + 1) * var(--mini-key-width) - (var(--mini-black-key-width) / 2)
+  );
+  width: var(--mini-black-key-width);
+  height: 60%;
+  background: #1c1c1c;
+  border-radius: 0 0 1px 1px;
+  z-index: 2;
+}
+
+.mini-key-black.active {
+  background: #7c3aed;
+}
