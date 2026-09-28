@@ -145,6 +145,33 @@ function App() {
     }
   }
 
+  // First letter A-Z not already used as a section name, so inserting before the start suggests "A".
+  function suggestSectionName() {
+    const used = new Set(
+      progression.filter((e) => e.type === 'section').map((e) => e.name.trim().toUpperCase()),
+    )
+    return [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].find((letter) => !used.has(letter)) ?? ''
+  }
+
+  function startSectionBefore(id) {
+    const name = window.prompt('Section name', suggestSectionName())?.trim().slice(0, 40)
+    if (!name) return
+    setProgression((prev) => {
+      const index = prev.findIndex((entry) => entry.id === id)
+      if (index === -1) return prev
+      const next = [...prev]
+      next.splice(index, 0, { id: crypto.randomUUID(), type: 'section', name })
+      return next
+    })
+  }
+
+  function renameSection(id) {
+    const current = progression.find((entry) => entry.id === id)
+    const name = window.prompt('Section name', current?.name ?? '')?.trim().slice(0, 40)
+    if (!name) return
+    setProgression((prev) => prev.map((entry) => (entry.id === id ? { ...entry, name } : entry)))
+  }
+
   function clearProgression() {
     setProgression([])
   }
@@ -368,6 +395,8 @@ function App() {
               onMove={moveChord}
               onDuplicate={duplicateChord}
               onUpdate={updateChord}
+              onStartSection={startSectionBefore}
+              onRenameSection={renameSection}
               beatsPerMeasure={beatsPerMeasure}
               onPlayChord={handlePlayChord}
               playDisabled={isPlaying}

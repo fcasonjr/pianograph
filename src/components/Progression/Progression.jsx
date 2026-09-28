@@ -8,6 +8,8 @@ function Progression({
   onMove,
   onDuplicate,
   onUpdate,
+  onStartSection,
+  onRenameSection,
   beatsPerMeasure,
   onPlayChord,
   playDisabled,
@@ -28,6 +30,7 @@ function Progression({
             <SectionMarker
               key={entry.id}
               name={entry.name}
+              onRename={() => onRenameSection(entry.id)}
               onMoveLeft={() => onMove(entry.id, -1)}
               onMoveRight={() => onMove(entry.id, 1)}
               onRemove={() => onRemove(entry.id)}
@@ -44,6 +47,8 @@ function Progression({
             notes={entry.notes}
             beats={entry.beats}
             beatsPerMeasure={beatsPerMeasure}
+            startsSection={chords[index - 1]?.type === 'section'}
+            onStartSection={() => onStartSection(entry.id)}
             onSetBeats={(beats) => onUpdate(entry.id, { beats })}
             onSetMarks={(patch) => onUpdate(entry.id, patch)}
             repeatStart={entry.repeatStart}

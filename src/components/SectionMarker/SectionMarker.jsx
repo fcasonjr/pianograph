@@ -1,9 +1,17 @@
 import './SectionMarker.css'
 
-function SectionMarker({ name, onMoveLeft, onMoveRight, onRemove, isFirst, isLast }) {
+function SectionMarker({ name, onRename, onMoveLeft, onMoveRight, onRemove, isFirst, isLast }) {
   return (
     <div className="section-marker">
-      <span className="section-marker-name">{name}</span>
+      <button
+        type="button"
+        className="section-marker-name"
+        onClick={onRename}
+        aria-label={`Rename section ${name}`}
+        title="Rename section"
+      >
+        {name}
+      </button>
       <span className="section-marker-rule" aria-hidden="true" />
       <div className="section-marker-actions">
         <button

@@ -8,6 +8,8 @@ function ChordCard({
   notes,
   beats,
   beatsPerMeasure,
+  startsSection,
+  onStartSection,
   onSetBeats,
   onSetMarks,
   repeatStart,
@@ -25,6 +27,16 @@ function ChordCard({
 }) {
   return (
     <div className={`chord-card ${isPlaying ? 'playing' : ''}`}>
+      <button
+        type="button"
+        className="icon-btn chord-card-section"
+        onClick={onStartSection}
+        disabled={startsSection}
+        aria-label={`Start a section before ${label}`}
+        title={startsSection ? 'This chord already starts a section' : 'Start a section here'}
+      >
+        §
+      </button>
       <div className="chord-card-name">{label}</div>
       <PianoDiagram notes={notes} />
       <div className="beat-presets" role="group" aria-label={`Length of ${label}`}>
