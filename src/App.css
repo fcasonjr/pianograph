@@ -15,6 +15,13 @@
   gap: 12px;
 }
 
+.header-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 .app-title {
   font-size: 24px;
   font-weight: 800;

@@ -32,3 +32,22 @@ export function saveProgression(progression) {
     // localStorage unavailable (private browsing, quota, etc.) — persistence is best-effort
   }
 }
+
+const PREFS_KEY = 'pianograph:preferences'
+
+export function loadPreferences() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}')
+    return { accidentals: parsed?.accidentals === 'flats' ? 'flats' : 'sharps' }
+  } catch {
+    return { accidentals: 'sharps' }
+  }
+}
+
+export function savePreferences(prefs) {
+  try {
+    localStorage.setItem(PREFS_KEY, JSON.stringify(prefs))
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}

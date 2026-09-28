@@ -4,7 +4,7 @@ import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import { chordLabel } from './utils/chordDetection'
 import { playChord, playProgression } from './utils/audio'
-import { loadProgression, saveProgression } from './utils/storage'
+import { loadPreferences, loadProgression, savePreferences, saveProgression } from './utils/storage'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
 
@@ -16,13 +16,24 @@ function App() {
   const [playingChordId, setPlayingChordId] = useState(null)
   const [sectionName, setSectionName] = useState('')
   const [view, setView] = useState('builder')
+  const [accidentals, setAccidentals] = useState(() => loadPreferences().accidentals)
 
   useEffect(() => {
     saveProgression(progression)
   }, [progression])
 
-  const currentLabel = chordLabel(selectedNotes)
+  const currentLabel = chordLabel(selectedNotes, accidentals)
   const chordDisplay = currentLabel || 'Click keys to build a chord'
+
+  function changeAccidentals(next) {
+    setAccidentals(next)
+    savePreferences({ accidentals: next })
+    setProgression((prev) =>
+      prev.map((entry) =>
+        entry.type === 'section' ? entry : { ...entry, label: chordLabel(entry.notes, next) },
+      ),
+    )
+  }
 
   function addChord() {
     if (selectedNotes.length === 0) return
@@ -98,25 +109,47 @@ function App() {
         <h1 className="app-title">
           Piano<span>graph</span>
         </h1>
-        <div className="tabs" role="tablist" aria-label="View">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'builder'}
-            className={`tab ${view === 'builder' ? 'active' : ''}`}
-            onClick={() => setView('builder')}
-          >
-            Builder
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'leadsheet'}
-            className={`tab ${view === 'leadsheet' ? 'active' : ''}`}
-            onClick={() => setView('leadsheet')}
-          >
-            Lead sheet
-          </button>
+        <div className="header-controls">
+          <div className="tabs" role="radiogroup" aria-label="Accidentals">
+            <button
+              type="button"
+              role="radio"
+              aria-checked={accidentals === 'sharps'}
+              className={`tab ${accidentals === 'sharps' ? 'active' : ''}`}
+              onClick={() => changeAccidentals('sharps')}
+            >
+              ♯ Sharps
+            </button>
+            <button
+              type="button"
+              role="radio"
+              aria-checked={accidentals === 'flats'}
+              className={`tab ${accidentals === 'flats' ? 'active' : ''}`}
+              onClick={() => changeAccidentals('flats')}
+            >
+              ♭ Flats
+            </button>
+          </div>
+          <div className="tabs" role="tablist" aria-label="View">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'builder'}
+              className={`tab ${view === 'builder' ? 'active' : ''}`}
+              onClick={() => setView('builder')}
+            >
+              Builder
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={view === 'leadsheet'}
+              className={`tab ${view === 'leadsheet' ? 'active' : ''}`}
+              onClick={() => setView('leadsheet')}
+            >
+              Lead sheet
+            </button>
+          </div>
         </div>
       </header>
 
