@@ -1,23 +1,5 @@
 import { cleanMarks } from './repeats'
-
-function downloadFile(filename, content, mimeType) {
-  const blob = new Blob([content], { type: mimeType })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a')
-  a.href = url
-  a.download = filename
-  a.click()
-  URL.revokeObjectURL(url)
-}
-
-function fileBase(title) {
-  const slug = title
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-  return slug || 'pianograph-progression'
-}
+import { downloadFile, fileBase } from './download'
 
 export function exportProgressionAsJson(progression, title = '', beatsPerMeasure = 4) {
   const entries = progression.map((entry) =>
