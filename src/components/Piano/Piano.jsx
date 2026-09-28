@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { generateKeys } from '../../utils/pianoKeys'
 import { START_OCTAVE, OCTAVE_COUNT } from '../../constants'
 import { useMidiInput } from '../../hooks/useMidiInput'
@@ -12,9 +12,20 @@ function Piano({ startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onNotes
     [startOctave, octaveCount],
   )
 
+  const scrollRef = useRef(null)
+  const validIds = useMemo(
+    () => new Set([...whiteKeys, ...blackKeys].map((key) => key.id)),
+    [whiteKeys, blackKeys],
+  )
+
   useEffect(() => {
     onNotesChange?.(Array.from(activeNotes))
   }, [activeNotes, onNotesChange])
+
+  useEffect(() => {
+    const el = scrollRef.current
+    if (el) el.scrollLeft = (el.scrollWidth - el.clientWidth) / 2
+  }, [])
 
   function toggleNote(id) {
     if (!activeNotes.has(id)) {
@@ -32,6 +43,7 @@ function Piano({ startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onNotes
   }
 
   function setNoteActive(id, isActive) {
+    if (!validIds.has(id)) return
     if (isActive) {
       startNote(id)
     } else {
@@ -65,30 +77,32 @@ function Piano({ startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onNotes
   return (
     <div className="piano-container">
       <p className={`midi-status ${midiDevices.length > 0 ? 'connected' : ''}`}>{midiStatus}</p>
-      <div className="piano" style={{ '--key-count': whiteKeys.length }}>
-        {whiteKeys.map((key) => (
-          <button
-            key={key.id}
-            type="button"
-            className={`key key-white ${activeNotes.has(key.id) ? 'active' : ''}`}
-            onClick={() => toggleNote(key.id)}
-            aria-pressed={activeNotes.has(key.id)}
-            aria-label={key.id}
-          >
-            {key.note === 'C' && <span className="key-label">{key.id}</span>}
-          </button>
-        ))}
-        {blackKeys.map((key) => (
-          <button
-            key={key.id}
-            type="button"
-            className={`key key-black ${activeNotes.has(key.id) ? 'active' : ''}`}
-            style={{ '--after-index': key.afterIndex }}
-            onClick={() => toggleNote(key.id)}
-            aria-pressed={activeNotes.has(key.id)}
-            aria-label={key.id}
-          />
-        ))}
+      <div className="piano-scroll" ref={scrollRef}>
+        <div className="piano" style={{ '--key-count': whiteKeys.length }}>
+          {whiteKeys.map((key) => (
+            <button
+              key={key.id}
+              type="button"
+              className={`key key-white ${activeNotes.has(key.id) ? 'active' : ''}`}
+              onClick={() => toggleNote(key.id)}
+              aria-pressed={activeNotes.has(key.id)}
+              aria-label={key.id}
+            >
+              {key.note === 'C' && <span className="key-label">{key.id}</span>}
+            </button>
+          ))}
+          {blackKeys.map((key) => (
+            <button
+              key={key.id}
+              type="button"
+              className={`key key-black ${activeNotes.has(key.id) ? 'active' : ''}`}
+              style={{ '--after-index': key.afterIndex }}
+              onClick={() => toggleNote(key.id)}
+              aria-pressed={activeNotes.has(key.id)}
+              aria-label={key.id}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )

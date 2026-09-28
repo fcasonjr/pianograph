@@ -30,12 +30,18 @@
   background: var(--success);
 }
 
+.piano-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
 .piano {
   --black-key-width: calc(100% / var(--key-count) * 0.62);
 
   position: relative;
   display: flex;
   width: 100%;
+  min-width: calc(var(--key-count) * 32px);
   height: clamp(150px, 24vw, 210px);
   user-select: none;
   touch-action: manipulation;

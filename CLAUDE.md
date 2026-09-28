@@ -17,7 +17,7 @@ Pianograph is a React + Vite app for building piano chords/progressions. The cor
 
 ### Key generation and octave range
 
-`src/constants.js` defines `START_OCTAVE`/`OCTAVE_COUNT`, the single source of truth for which octave range is rendered. `src/utils/pianoKeys.js` (`generateKeys`) builds the white/black key layout from that range and is shared by both the interactive `Piano` component and every read-only mini keyboard diagram — so the main keyboard and every diagram always agree on layout without duplicating the black-key positioning math. The mini-diagram rendering itself lives in one place, `src/components/PianoDiagram/PianoDiagram.jsx`, and is reused by both `ChordCard` and `LeadSheet` — don't reintroduce a second inline copy of that rendering loop.
+`src/constants.js` defines `START_OCTAVE`/`OCTAVE_COUNT` (currently C2–B5, four octaves, to fit two-handed voicings with bass notes), the single source of truth for which octave range the interactive `Piano` renders. The piano scrolls horizontally (`.piano-scroll`, min 32px per key) instead of shrinking keys on narrow screens, and MIDI notes outside the rendered range are ignored in `Piano.jsx` (`validIds`) rather than becoming invisible phantom notes. `src/utils/pianoKeys.js` (`generateKeys`) builds the white/black key layout from that range and is shared by both the interactive `Piano` component and every read-only mini keyboard diagram — so the main keyboard and every diagram always agree on layout without duplicating the black-key positioning math. The mini-diagram rendering itself lives in one place, `src/components/PianoDiagram/PianoDiagram.jsx`, and is reused by both `ChordCard` and `LeadSheet` — don't reintroduce a second inline copy of that rendering loop. Unlike the main keyboard, each diagram *fits to its own notes*: it shows only the octaves the chord uses (minimum two) and shrinks its key width so it never exceeds 140px, so wide two-handed voicings get a wider, denser diagram instead of overflowing measures.
 
 ### Selection state lives in `Piano`, driven by two input sources
 
@@ -31,7 +31,7 @@ Gotcha already hit once: the `onNotesChange` callback must be invoked from a `us
 
 ### Chord detection
 
-`src/utils/chordDetection.js` wraps Tonal's `Chord.detect`. `chordLabel(noteIds)` is the single formatting function used both for the live chord-name header and for the label stored on each saved progression entry — same fallback rules apply everywhere (empty selection / single note / unrecognized cluster / detected chord name(s)).
+`src/utils/chordDetection.js` wraps Tonal's `Chord.detect`. Two non-obvious details: notes are sorted low-to-high by pitch first (Tonal treats the *first* note as the bass, so click order would otherwise change slash-chord names), and `assumePerfectFifth: true` is passed so voicings that omit the 5th (common in jazz) still match. Chord names are spelled from the input note ids, which use sharps only (`D#4`), so flat-key chords currently come out as e.g. `D#maj7` rather than `Ebmaj7`. `chordLabel(noteIds)` is the single formatting function used both for the live chord-name header and for the label stored on each saved progression entry — same fallback rules apply everywhere (empty selection / single note / unrecognized cluster / detected chord name(s)).
 
 ### Audio playback
 
