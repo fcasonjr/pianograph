@@ -4,24 +4,25 @@
 
   position: relative;
   display: flex;
+  flex: 0 0 auto;
   width: calc(var(--key-count) * var(--mini-key-width));
   height: 36px;
 }
 
 .mini-key {
   box-sizing: border-box;
-  border: 1px solid #2a2a2a;
+  border: 1px solid var(--key-border);
 }
 
 .mini-key-white {
   flex: 0 0 var(--mini-key-width);
   height: 100%;
-  background: #fdfdfd;
+  background: var(--key-white);
   border-radius: 0 0 2px 2px;
 }
 
 .mini-key-white.active {
-  background: #c4b5fd;
+  background: var(--key-white-active);
 }
 
 .mini-key-black {
@@ -30,13 +31,13 @@
   left: calc(
     (var(--after-index) + 1) * var(--mini-key-width) - (var(--mini-black-key-width) / 2)
   );
+  z-index: 2;
   width: var(--mini-black-key-width);
   height: 60%;
-  background: #1c1c1c;
+  background: var(--key-black);
   border-radius: 0 0 1px 1px;
-  z-index: 2;
 }
 
 .mini-key-black.active {
-  background: #7c3aed;
+  background: var(--key-black-active);
 }

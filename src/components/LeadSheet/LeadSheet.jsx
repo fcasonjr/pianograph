@@ -63,17 +63,21 @@ function LeadSheet({ progression }) {
 
   return (
     <div className="leadsheet-page">
-      <button
-        type="button"
-        className="print-button no-print"
-        onClick={() => window.print()}
-      >
-        🖨 Print / Save as PDF
-      </button>
-      <div className="leadsheet">
-        {rows.map((row, index) => (
-          <StaffRow key={row.measures[0]?.id ?? `label-${index}`} row={row} />
-        ))}
+      <div className="leadsheet-toolbar no-print">
+        <button
+          type="button"
+          className="btn btn-primary print-button no-print"
+          onClick={() => window.print()}
+        >
+          Print / Save as PDF
+        </button>
+      </div>
+      <div className="leadsheet-sheet">
+        <div className="leadsheet">
+          {rows.map((row, index) => (
+            <StaffRow key={row.measures[0]?.id ?? `label-${index}`} row={row} />
+          ))}
+        </div>
       </div>
     </div>
   )

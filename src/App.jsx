@@ -94,101 +94,136 @@ function App() {
 
   return (
     <div id="app">
-      <h1>Pianograph</h1>
-
-      <button
-        type="button"
-        className="view-toggle-button no-print"
-        onClick={() => setView(view === 'builder' ? 'leadsheet' : 'builder')}
-      >
-        {view === 'builder' ? 'View leadsheet' : 'Back to builder'}
-      </button>
+      <header className="app-header no-print">
+        <h1 className="app-title">
+          Piano<span>graph</span>
+        </h1>
+        <div className="tabs" role="tablist" aria-label="View">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'builder'}
+            className={`tab ${view === 'builder' ? 'active' : ''}`}
+            onClick={() => setView('builder')}
+          >
+            Builder
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'leadsheet'}
+            className={`tab ${view === 'leadsheet' ? 'active' : ''}`}
+            onClick={() => setView('leadsheet')}
+          >
+            Lead sheet
+          </button>
+        </div>
+      </header>
 
       {view === 'leadsheet' ? (
         <LeadSheet progression={progression} />
       ) : (
         <>
-          <p className="chord-display">{chordDisplay}</p>
-          <button
-            type="button"
-            className="add-chord-button"
-            onClick={addChord}
-            disabled={selectedNotes.length === 0}
-          >
-            Add chord
-          </button>
+          <section className="panel compose-panel">
+            <div className="panel-head">
+              <p className={`chord-display ${currentLabel ? '' : 'is-empty'}`}>{chordDisplay}</p>
+              <button
+                type="button"
+                className="btn btn-primary add-chord-button"
+                onClick={addChord}
+                disabled={selectedNotes.length === 0}
+              >
+                Add chord
+              </button>
+            </div>
+            <Piano onNotesChange={setSelectedNotes} />
+          </section>
 
-          <div className="section-controls">
-            <input
-              type="text"
-              className="section-name-input"
-              placeholder="Section name (e.g. A)"
-              value={sectionName}
-              onChange={(e) => setSectionName(e.target.value)}
+          <section className="panel">
+            <div className="panel-head">
+              <h2 className="panel-title">Progression</h2>
+              <div className="progression-actions">
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={clearProgression}
+                  disabled={progression.length === 0}
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => exportProgressionAsJson(progression)}
+                  disabled={progression.length === 0}
+                >
+                  Export JSON
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => exportProgressionAsText(progression)}
+                  disabled={progression.length === 0}
+                >
+                  Export text
+                </button>
+              </div>
+            </div>
+
+            <div className="toolbar">
+              <div className="progression-controls">
+                <button
+                  type="button"
+                  className="btn btn-primary play-progression-button"
+                  onClick={handlePlayProgression}
+                  disabled={isPlaying || progression.length === 0}
+                >
+                  ▶ Play progression
+                </button>
+                <label className="tempo-control">
+                  Tempo
+                  <input
+                    type="number"
+                    className="input"
+                    min={40}
+                    max={300}
+                    value={tempo}
+                    onChange={(e) => setTempo(Number(e.target.value))}
+                  />
+                  BPM
+                </label>
+              </div>
+
+              <div className="section-controls">
+                <input
+                  type="text"
+                  className="input section-name-input"
+                  placeholder="Section name (e.g. A)"
+                  value={sectionName}
+                  onChange={(e) => setSectionName(e.target.value)}
+                />
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={addSection}
+                  disabled={!sectionName.trim()}
+                >
+                  Add section
+                </button>
+              </div>
+            </div>
+
+            <Progression
+              chords={progression}
+              onRemove={removeChord}
+              onMove={moveChord}
+              onDuplicate={duplicateChord}
+              onSetBeats={setChordBeats}
+              onPlayChord={handlePlayChord}
+              playDisabled={isPlaying}
+              playingChordId={playingChordId}
             />
-            <button type="button" onClick={addSection} disabled={!sectionName.trim()}>
-              Add section
-            </button>
-          </div>
-
-          <Piano onNotesChange={setSelectedNotes} />
-
-          <div className="progression-controls">
-            <button
-              type="button"
-              className="play-progression-button"
-              onClick={handlePlayProgression}
-              disabled={isPlaying || progression.length === 0}
-            >
-              ▶ Play progression
-            </button>
-            <label className="tempo-control">
-              Tempo
-              <input
-                type="number"
-                min={40}
-                max={300}
-                value={tempo}
-                onChange={(e) => setTempo(Number(e.target.value))}
-              />
-              BPM
-            </label>
-          </div>
-
-          <Progression
-            chords={progression}
-            onRemove={removeChord}
-            onMove={moveChord}
-            onDuplicate={duplicateChord}
-            onSetBeats={setChordBeats}
-            onPlayChord={handlePlayChord}
-            playDisabled={isPlaying}
-            playingChordId={playingChordId}
-          />
-
-          <div className="progression-actions">
-            <button
-              type="button"
-              onClick={clearProgression}
-              disabled={progression.length === 0}
-            >
-              Clear
-            </button>
-            <button
-              type="button"
-              onClick={() => exportProgressionAsJson(progression)}
-              disabled={progression.length === 0}
-            >
-              Export JSON
-            </button>
-            <button
-              type="button"
-              onClick={() => exportProgressionAsText(progression)}
-              disabled={progression.length === 0}
-            >
-              Export text
-            </button>
-          </div>
+          </section>
         </>
       )}
     </div>

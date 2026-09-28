@@ -2,73 +2,50 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px 12px;
+  gap: 10px;
+  padding: 14px 12px 8px;
+  background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--bg);
-  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-sm);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
 }
 
 .chord-card.playing {
-  border-color: #7c3aed;
-  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-ring);
 }
 
 .chord-card-name {
-  font-weight: 600;
-  font-size: 15px;
+  max-width: 100%;
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text-h);
-  white-space: nowrap;
-}
-
-.chord-card-actions {
-  display: flex;
-  gap: 2px;
-  justify-content: center;
-}
-
-.chord-card-actions button {
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 3px 5px;
-  border-radius: 4px;
-}
-
-.chord-card-actions button:hover:not(:disabled) {
-  color: var(--text-h);
-  background: rgba(127, 127, 127, 0.12);
-}
-
-.chord-card-actions button:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .chord-card-beats {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 11px;
+  gap: 4px;
+  font-size: 13px;
   color: var(--text);
 }
 
-.chord-card-beats button {
-  border: none;
-  background: transparent;
-  color: var(--text);
-  font-size: 12px;
-  line-height: 1;
-  cursor: pointer;
-  padding: 2px 5px;
-  border-radius: 4px;
+.chord-card-beats span {
+  min-width: 56px;
+  text-align: center;
 }
 
-.chord-card-beats button:hover {
-  color: var(--text-h);
-  background: rgba(127, 127, 127, 0.12);
+.chord-card-actions {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 6px;
+  border-top: 1px solid var(--border);
+}
+
+.chord-card-play {
+  color: var(--accent);
 }

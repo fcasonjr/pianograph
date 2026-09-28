@@ -1,87 +1,104 @@
 .piano-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  gap: 12px;
+  width: 100%;
 }
 
 .midi-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
   margin: 0;
+  padding: 4px 12px;
   font-size: 12px;
   color: var(--text);
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+
+.midi-status::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-strong);
+}
+
+.midi-status.connected::before {
+  background: var(--success);
 }
 
 .piano {
-  --key-width: 44px;
-  --black-key-width: 26px;
+  --black-key-width: calc(100% / var(--key-count) * 0.62);
 
   position: relative;
   display: flex;
-  width: calc(var(--key-count) * var(--key-width));
-  max-width: 100%;
-  height: 180px;
+  width: 100%;
+  height: clamp(150px, 24vw, 210px);
   user-select: none;
+  touch-action: manipulation;
 }
 
 .key {
   padding: 0;
-  border: 1px solid #2a2a2a;
-  box-sizing: border-box;
+  border: 1px solid var(--key-border);
   cursor: pointer;
   transition: background-color 0.08s ease;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .key-white {
   position: relative;
-  flex: 0 0 var(--key-width);
+  flex: 1 1 0;
+  min-width: 0;
   height: 100%;
-  background: #fdfdfd;
-  border-radius: 0 0 6px 6px;
   display: flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 6px;
-}
-
-.key-white.active {
-  background: #c4b5fd;
+  padding-bottom: 8px;
+  background: var(--key-white);
+  border-radius: 0 0 8px 8px;
 }
 
 .key-white:hover {
-  background: #f1eefc;
+  background: var(--key-white-hover);
+}
+
+.key-white.active {
+  background: var(--key-white-active);
 }
 
 .key-white.active:hover {
-  background: #b3a1fa;
+  filter: brightness(0.95);
 }
 
 .key-label {
   font-size: 11px;
-  color: #888;
+  color: #77747f;
   pointer-events: none;
 }
 
 .key-black {
   position: absolute;
   top: 0;
-  left: calc(
-    (var(--after-index) + 1) * var(--key-width) - (var(--black-key-width) / 2)
-  );
+  left: calc((var(--after-index) + 1) * 100% / var(--key-count) - var(--black-key-width) / 2);
+  z-index: 2;
   width: var(--black-key-width);
   height: 62%;
-  background: #1c1c1c;
-  border-radius: 0 0 4px 4px;
-  z-index: 2;
-}
-
-.key-black.active {
-  background: #7c3aed;
+  background: var(--key-black);
+  border-radius: 0 0 5px 5px;
 }
 
 .key-black:hover {
-  background: #3a3a3a;
+  background: var(--key-black-hover);
+}
+
+.key-black.active {
+  background: var(--key-black-active);
 }
 
 .key-black.active:hover {
-  background: #6d28d9;
+  filter: brightness(0.92);
 }

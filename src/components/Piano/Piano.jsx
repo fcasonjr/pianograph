@@ -64,7 +64,7 @@ function Piano({ startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onNotes
 
   return (
     <div className="piano-container">
-      <p className="midi-status">{midiStatus}</p>
+      <p className={`midi-status ${midiDevices.length > 0 ? 'connected' : ''}`}>{midiStatus}</p>
       <div className="piano" style={{ '--key-count': whiteKeys.length }}>
         {whiteKeys.map((key) => (
           <button
