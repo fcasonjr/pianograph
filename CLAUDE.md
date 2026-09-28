@@ -9,7 +9,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run preview` — serve the production build locally
 - `npm run lint` — run Oxlint (config in `.oxlintrc.json`; react + oxc plugins, `react/rules-of-hooks` is an error)
 
-There is no test runner configured in this project.
+There is no test runner configured in this project. `npm run lint` reports one known warning (`react(refs)` on `handlersRef.current = …` in `hooks/useMidiInput.js`); it is the intentional latest-callback-ref pattern, so leave it.
+
+**Verifying changes.** Behavior is checked with throwaway Playwright scripts (kept outside the repo) run against `npm run dev` at `localhost:5173`, not a committed suite. Handy facts for writing them: piano keys are buttons with `aria-label="C4"` (sharp-spelled ids); state persists in `localStorage` under `pianograph:progression`, `:title`, `:beatsPerMeasure`, and `:preferences` (`accidentals`, `midiAutoAdd`), so tests can seed a song with `addInitScript`; Web MIDI is exercised by replacing `navigator.requestMIDIAccess` with a fake input whose `onmidimessage` you call; the Share path is exercised by stubbing `navigator.share`/`canShare`. Real iPad Safari (share sheet, html-to-image rendering) cannot be tested here.
+
+**Deploying.** It is a fully client-side static site: `npm run build` → upload `dist/`. Anything in `public/` is copied verbatim — the bundled piano samples (`public/samples/salamander/`) and Netlify's `public/_headers`. Vite's `base` is the default `/`; hosting under a subpath (e.g. GitHub Pages project sites) needs `base` set, and `audio.js` already builds sample URLs from `import.meta.env.BASE_URL`. There is no backend, so saved songs live only in each browser (hence Export/Import JSON).
 
 ## Architecture
 
@@ -52,7 +56,7 @@ Chords also carry optional **repeat marks** as flags on the chord itself (not as
 
 Sections are created two ways: "Add section" appends one at the end, and the `§` button on each chord card (`startSectionBefore` in `App.jsx`) inserts one *before that chord* — needed because a section added after the fact would otherwise have to be walked back with the ← arrow one chord at a time. The suggested name is the first unused letter A–Z, both flows use `window.prompt` (blank/cancel is a no-op), and clicking a section's name renames it (`renameSection`). The `§` button is disabled on a chord that already directly follows a section marker.
 
-This "marker as just another array entry" design is deliberate: reordering (`moveChord`), duplication (`duplicateChord`), and removal (`removeChord`) in `App.jsx` are all generic over `id` and don't care about `type`, so sections move/duplicate/delete exactly like chords with no special-casing. Anything that *does* need to distinguish them (rendering, playback, export) checks `entry.type === 'section'` explicitly — see `Progression.jsx` (branches to `SectionMarker` vs `ChordCard`), `utils/audio.js`'s `playProgression` (filters sections out before scheduling — they don't make sound or consume playback time), and `utils/exportProgression.js` (emits a different shape per type).
+This "marker as just another array entry" design is deliberate: reordering (`moveChord`), duplication (`duplicateChord`), and removal (`removeChord`) in `App.jsx` are all generic over `id` and don't care about `type`, so sections move/duplicate/delete exactly like chords with no special-casing. Anything that *does* need to distinguish them (rendering, playback, export) checks `entry.type === 'section'` explicitly — see `Progression.jsx` (branches to `SectionMarker` vs `ChordCard`), `utils/audio.js`'s `playProgression` (`unfoldRepeats` returns chords only, so sections don't make sound or consume playback time), and `utils/exportProgression.js` (emits a different shape per type).
 
 `ids` are generated with `crypto.randomUUID()`. `App.jsx` lazy-initializes progression state from `src/utils/storage.js` (`localStorage` key `pianograph:progression`) and persists on every change via `useEffect`. Storage reads/writes are wrapped in try/catch since `localStorage` is an external-boundary API that can throw (private browsing, quota); `loadProgression()` also normalizes entries loaded from before `type`/`beats` existed, so old saved data doesn't break — extend that normalization if the entry shape changes again.
 
