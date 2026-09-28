@@ -24,6 +24,7 @@
   --key-black-hover: #3a3a3a;
   --key-black-active: #7c3aed;
   --key-border: #2a2a2a;
+  --key-outline-soft: #8b8895;
 
   --shadow-sm: 0 1px 2px rgba(20, 18, 30, 0.06);
   --shadow-md: 0 4px 16px rgba(20, 18, 30, 0.08);
@@ -66,6 +67,7 @@
     --key-black-hover: #26262f;
     --key-black-active: #8b5cf6;
     --key-border: #05050a;
+    --key-outline-soft: #4a4a56;
 
     --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
     --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.45);
@@ -255,6 +257,7 @@ h2 {
     --key-black: #1c1c1c;
     --key-black-active: #7c3aed;
     --key-border: #2a2a2a;
+    --key-outline-soft: #8b8895;
   }
 
   #root {

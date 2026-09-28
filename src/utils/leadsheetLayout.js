@@ -2,7 +2,10 @@ import { cleanMarks } from './repeats'
 
 const DEFAULT_MAX_BEATS_PER_ROW = 16
 
+// `maxBeatsPerRow` is a number, or a function of a row's measures (including the one being added) that
+// returns how many beats that row may hold — so rows with short, wide-diagram chords can hold fewer.
 export function buildLeadSheetRows(progression, maxBeatsPerRow = DEFAULT_MAX_BEATS_PER_ROW) {
+  const capacityFor = typeof maxBeatsPerRow === 'function' ? maxBeatsPerRow : () => maxBeatsPerRow
   const rows = []
   let currentRow = null
 
@@ -19,18 +22,23 @@ export function buildLeadSheetRows(progression, maxBeatsPerRow = DEFAULT_MAX_BEA
 
     if (!currentRow) startNewRow(null)
 
-    const rowBeats = currentRow.measures.reduce((sum, m) => sum + m.beats, 0)
-    if (currentRow.measures.length > 0 && rowBeats + entry.beats > maxBeatsPerRow) {
-      startNewRow(null)
-    }
-
-    currentRow.measures.push({
+    const measure = {
       id: entry.id,
       label: entry.label,
       notes: entry.notes,
       beats: entry.beats,
       ...cleanMarks(entry),
-    })
+    }
+
+    const rowBeats = currentRow.measures.reduce((sum, m) => sum + m.beats, 0)
+    if (
+      currentRow.measures.length > 0 &&
+      rowBeats + measure.beats > capacityFor([...currentRow.measures, measure])
+    ) {
+      startNewRow(null)
+    }
+
+    currentRow.measures.push(measure)
   })
 
   return rows.filter((row) => row.measures.length > 0 || row.label)

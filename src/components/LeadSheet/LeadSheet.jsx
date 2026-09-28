@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import PianoDiagram from '../PianoDiagram/PianoDiagram'
 import { buildLeadSheetRows } from '../../utils/leadsheetLayout'
+import { diagramNaturalWidth } from '../../utils/diagramSize'
 import { TREBLE_CLEF_PATH } from './trebleClef'
 import {
   canShareImageFiles,
@@ -15,6 +16,9 @@ const STAFF_LINE_YS = [2, 3, 4, 5, 6]
 const CLEF_GUTTER = 34
 const MIN_PX_PER_BEAT = 48
 const MAX_MEASURES_PER_ROW = 4
+// A chord's cell must fit its diagram at no less than this fraction of natural size, plus cell padding.
+const MIN_DIAGRAM_SCALE = 0.8
+const CELL_PADDING = 12
 
 // Barlines sit on measure boundaries (every beatsPerMeasure beats from the row start),
 // not between chords, so several short chords can share one measure.
@@ -25,12 +29,19 @@ function barlinePositions(totalBeats, beatsPerMeasure) {
   return xs
 }
 
-// Rows hold a whole number of measures, as many as fit at a legible width per beat.
-function beatsPerRowFor(contentWidth, beatsPerMeasure) {
-  if (contentWidth <= 0) return MAX_MEASURES_PER_ROW * beatsPerMeasure
-  const fitBeats = Math.floor((contentWidth - CLEF_GUTTER) / MIN_PX_PER_BEAT)
-  const measures = Math.min(MAX_MEASURES_PER_ROW, Math.max(1, Math.floor(fitBeats / beatsPerMeasure)))
-  return measures * beatsPerMeasure
+// How many beats a row holds: a whole number of measures, as many as fit at a legible width. The width
+// per beat is at least MIN_PX_PER_BEAT and grows when the row has short chords, so their diagrams stay large.
+function makeRowCapacity(contentWidth, beatsPerMeasure) {
+  return (measures) => {
+    if (contentWidth <= 0) return MAX_MEASURES_PER_ROW * beatsPerMeasure
+    const pxPerBeat = Math.max(
+      MIN_PX_PER_BEAT,
+      ...measures.map((m) => (MIN_DIAGRAM_SCALE * diagramNaturalWidth(m.notes) + CELL_PADDING) / m.beats),
+    )
+    const fitBeats = Math.floor((contentWidth - CLEF_GUTTER) / pxPerBeat)
+    const measuresFit = Math.min(MAX_MEASURES_PER_ROW, Math.max(1, Math.floor(fitBeats / beatsPerMeasure)))
+    return measuresFit * beatsPerMeasure
+  }
 }
 
 // A lead sheet shows one chord symbol; labels can list several readings joined by " / ".
@@ -201,11 +212,11 @@ function StaffRow({ row, beatsPerMeasure }) {
 
 function LeadSheet({ progression, title, beatsPerMeasure }) {
   const [sheetRef, contentWidth] = useContentWidth()
-  const maxBeatsPerRow = beatsPerRowFor(contentWidth, beatsPerMeasure)
-  const rows = useMemo(
-    () => buildLeadSheetRows(progression, maxBeatsPerRow),
-    [progression, maxBeatsPerRow],
+  const rowCapacity = useMemo(
+    () => makeRowCapacity(contentWidth, beatsPerMeasure),
+    [contentWidth, beatsPerMeasure],
   )
+  const rows = useMemo(() => buildLeadSheetRows(progression, rowCapacity), [progression, rowCapacity])
   const image = useSheetImage(sheetRef, rows.length > 0, rows, title, contentWidth)
   const [canShare] = useState(() => canShareImageFiles())
 
