@@ -28,6 +28,7 @@ function App() {
   const [title, setTitle] = useState(() => loadTitle())
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
+  const [clearSignal, setClearSignal] = useState(0)
 
   useEffect(() => {
     saveProgression(progression)
@@ -197,16 +198,26 @@ function App() {
           <section className="panel compose-panel">
             <div className="panel-head">
               <p className={`chord-display ${currentLabel ? '' : 'is-empty'}`}>{chordDisplay}</p>
-              <button
-                type="button"
-                className="btn btn-primary add-chord-button"
-                onClick={addChord}
-                disabled={selectedNotes.length === 0}
-              >
-                Add chord
-              </button>
+              <div className="compose-actions">
+                <button
+                  type="button"
+                  className="btn btn-secondary clear-keyboard-button"
+                  onClick={() => setClearSignal((n) => n + 1)}
+                  disabled={selectedNotes.length === 0}
+                >
+                  Clear keyboard
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary add-chord-button"
+                  onClick={addChord}
+                  disabled={selectedNotes.length === 0}
+                >
+                  Add chord
+                </button>
+              </div>
             </div>
-            <Piano onNotesChange={setSelectedNotes} />
+            <Piano onNotesChange={setSelectedNotes} clearSignal={clearSignal} />
           </section>
 
           <section className="panel">

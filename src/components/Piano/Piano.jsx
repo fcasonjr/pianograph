@@ -5,8 +5,19 @@ import { useMidiInput } from '../../hooks/useMidiInput'
 import { previewNote, startNote, stopNote } from '../../utils/audio'
 import './Piano.css'
 
-function Piano({ startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onNotesChange }) {
+function Piano({
+  startOctave = START_OCTAVE,
+  octaveCount = OCTAVE_COUNT,
+  onNotesChange,
+  clearSignal = 0,
+}) {
   const [activeNotes, setActiveNotes] = useState(() => new Set())
+  const [handledClearSignal, setHandledClearSignal] = useState(clearSignal)
+  // The parent bumps clearSignal to request a clear; adjusting state during render avoids an extra effect pass.
+  if (clearSignal !== handledClearSignal) {
+    setHandledClearSignal(clearSignal)
+    setActiveNotes(new Set())
+  }
   const { whiteKeys, blackKeys } = useMemo(
     () => generateKeys(startOctave, octaveCount),
     [startOctave, octaveCount],
