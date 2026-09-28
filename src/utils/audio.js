@@ -1,7 +1,16 @@
 import * as Tone from 'tone'
 import { unfoldRepeats } from './repeats'
 
+// Real piano samples (Salamander Grand Piano, CC-BY 3.0), bundled in public/samples/salamander. One
+// recording every minor third across the app's range; Tone.Sampler pitch-shifts the gaps.
+const PIANO_BASE_URL = `${import.meta.env.BASE_URL}samples/salamander/`
+const PIANO_SAMPLES = Object.fromEntries(
+  ['C', 'D#', 'F#', 'A'].flatMap((name) => [2, 3, 4, 5].map((octave) => [`${name}${octave}`, `${name.replace('#', 's')}${octave}.mp3`])).concat([['C6', 'C6.mp3']]),
+)
+
 let synth = null
+let piano = null
+let pianoStatus = 'idle' // 'idle' | 'loading' | 'ready' | 'failed'
 
 function getSynth() {
   if (!synth) {
@@ -10,24 +19,49 @@ function getSynth() {
   return synth
 }
 
+// Starts downloading the piano samples (once). Until they finish — or if they never do, e.g. offline —
+// every audio path falls back to the synth, so sound always works.
+export function loadPiano() {
+  if (pianoStatus !== 'idle') return
+  pianoStatus = 'loading'
+  piano = new Tone.Sampler({
+    urls: PIANO_SAMPLES,
+    baseUrl: PIANO_BASE_URL,
+    release: 1,
+    onload: () => {
+      pianoStatus = 'ready'
+    },
+    onerror: () => {
+      pianoStatus = 'failed'
+    },
+  }).toDestination()
+}
+
+function getInstrument() {
+  loadPiano()
+  return pianoStatus === 'ready' ? piano : getSynth()
+}
+
 export async function playChord(notes, duration = 1) {
   if (notes.length === 0) return
   await Tone.start()
-  getSynth().triggerAttackRelease(notes, duration)
+  getInstrument().triggerAttackRelease(notes, duration)
 }
 
 export async function previewNote(note, duration = 0.5) {
   await Tone.start()
-  getSynth().triggerAttackRelease(note, duration)
+  getInstrument().triggerAttackRelease(note, duration)
 }
 
 export async function startNote(note) {
   await Tone.start()
-  getSynth().triggerAttack(note)
+  getInstrument().triggerAttack(note)
 }
 
 export function stopNote(note) {
-  getSynth().triggerRelease(note)
+  // The note may have started on the synth just before the piano finished loading, so release on both.
+  if (synth) synth.triggerRelease(note)
+  if (pianoStatus === 'ready') piano.triggerRelease(note)
 }
 
 export async function playProgression(chords, bpm, { onStepChange } = {}) {
@@ -36,7 +70,7 @@ export async function playProgression(chords, bpm, { onStepChange } = {}) {
   if (playable.length === 0) return 0
 
   await Tone.start()
-  const s = getSynth()
+  const instrument = getInstrument()
   const beatSeconds = 60 / bpm
   const now = Tone.now()
 
@@ -44,7 +78,7 @@ export async function playProgression(chords, bpm, { onStepChange } = {}) {
   let elapsedBeats = 0
   playable.forEach((chord) => {
     const beats = chord.beats ?? 4
-    s.triggerAttackRelease(chord.notes, beats * beatSeconds * 0.9, now + elapsedBeats * beatSeconds)
+    instrument.triggerAttackRelease(chord.notes, beats * beatSeconds * 0.9, now + elapsedBeats * beatSeconds)
     if (onStepChange) {
       setTimeout(() => onStepChange(chord.id), elapsedBeats * beatSeconds * 1000)
     }

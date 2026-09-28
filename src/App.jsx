@@ -3,7 +3,7 @@ import Piano from './components/Piano/Piano'
 import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import { chordLabel } from './utils/chordDetection'
-import { playChord, playProgression } from './utils/audio'
+import { loadPiano, playChord, playProgression } from './utils/audio'
 import {
   loadBeatsPerMeasure,
   loadPreferences,
@@ -33,6 +33,11 @@ function App() {
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
   const [clearSignal, setClearSignal] = useState(0)
+
+  useEffect(() => {
+    // Start fetching the piano samples now so they're ready by the first note.
+    loadPiano()
+  }, [])
 
   useEffect(() => {
     saveProgression(progression)
@@ -405,6 +410,10 @@ function App() {
           </section>
         </>
       )}
+
+      <p className="app-credit no-print">
+        Piano sound: Salamander Grand Piano by Alexander Holm (CC BY 3.0)
+      </p>
     </div>
   )
 }
