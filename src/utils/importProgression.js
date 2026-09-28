@@ -1,14 +1,14 @@
 import { Note } from 'tonal'
 import { chordLabel } from './chordDetection'
+import { DEFAULT_BEATS_PER_MEASURE, MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS } from '../constants'
 
-const MAX_BEATS = 32
 const MAX_TITLE_LENGTH = 120
 
 function fail(message) {
   throw new Error(message)
 }
 
-function parseEntry(raw, index, accidentals) {
+function parseEntry(raw, index, accidentals, defaultBeats) {
   const n = index + 1
   if (!raw || typeof raw !== 'object') fail(`Entry ${n} isn't an object.`)
 
@@ -29,7 +29,9 @@ function parseEntry(raw, index, accidentals) {
     ),
   ]
   const beats =
-    Number.isInteger(raw.beats) && raw.beats >= 1 && raw.beats <= MAX_BEATS ? raw.beats : 4
+    Number.isInteger(raw.beats) && raw.beats >= 1 && raw.beats <= MAX_CHORD_BEATS
+      ? raw.beats
+      : defaultBeats
 
   // Recompute the label rather than trusting the file, so it matches the current sharps/flats setting.
   return {
@@ -58,5 +60,13 @@ export function parseImportedSong(text, accidentals) {
     !Array.isArray(data) && typeof data.title === 'string'
       ? data.title.trim().slice(0, MAX_TITLE_LENGTH)
       : ''
-  return { title, progression: entries.map((entry, i) => parseEntry(entry, i, accidentals)) }
+  const fileBeats = !Array.isArray(data) ? data.beatsPerMeasure : undefined
+  const beatsPerMeasure = TIME_SIGNATURE_OPTIONS.includes(fileBeats)
+    ? fileBeats
+    : DEFAULT_BEATS_PER_MEASURE
+  return {
+    title,
+    beatsPerMeasure,
+    progression: entries.map((entry, i) => parseEntry(entry, i, accidentals, beatsPerMeasure)),
+  }
 }

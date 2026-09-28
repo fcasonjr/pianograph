@@ -17,13 +17,13 @@ function fileBase(title) {
   return slug || 'pianograph-progression'
 }
 
-export function exportProgressionAsJson(progression, title = '') {
+export function exportProgressionAsJson(progression, title = '', beatsPerMeasure = 4) {
   const entries = progression.map((entry) =>
     entry.type === 'section'
       ? { type: 'section', name: entry.name }
       : { type: 'chord', label: entry.label, notes: entry.notes, beats: entry.beats },
   )
-  const data = { title: title.trim(), progression: entries }
+  const data = { title: title.trim(), beatsPerMeasure, progression: entries }
   downloadFile(`${fileBase(title)}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 

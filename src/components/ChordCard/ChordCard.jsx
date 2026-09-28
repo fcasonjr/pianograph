@@ -1,10 +1,13 @@
 import PianoDiagram from '../PianoDiagram/PianoDiagram'
+import { beatPresets } from '../../utils/beats'
+import { MAX_CHORD_BEATS } from '../../constants'
 import './ChordCard.css'
 
 function ChordCard({
   label,
   notes,
   beats,
+  beatsPerMeasure,
   onSetBeats,
   onRemove,
   onMoveLeft,
@@ -20,6 +23,20 @@ function ChordCard({
     <div className={`chord-card ${isPlaying ? 'playing' : ''}`}>
       <div className="chord-card-name">{label}</div>
       <PianoDiagram notes={notes} />
+      <div className="beat-presets" role="group" aria-label={`Length of ${label}`}>
+        {beatPresets(beatsPerMeasure).map((preset) => (
+          <button
+            key={preset}
+            type="button"
+            className={`beat-preset ${beats === preset ? 'active' : ''}`}
+            aria-pressed={beats === preset}
+            aria-label={`Set ${label} to ${preset} beat${preset === 1 ? '' : 's'}`}
+            onClick={() => onSetBeats(preset)}
+          >
+            {preset}
+          </button>
+        ))}
+      </div>
       <div className="chord-card-beats">
         <button
           type="button"
@@ -35,7 +52,7 @@ function ChordCard({
         <button
           type="button"
           className="icon-btn"
-          onClick={() => onSetBeats(Math.min(32, beats + 1))}
+          onClick={() => onSetBeats(Math.min(MAX_CHORD_BEATS, beats + 1))}
           aria-label={`Increase beats for ${label}`}
         >
           +

@@ -1,30 +1,29 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import PianoDiagram from '../PianoDiagram/PianoDiagram'
 import { buildLeadSheetRows } from '../../utils/leadsheetLayout'
-import { BEATS_PER_MEASURE } from '../../constants'
 import './LeadSheet.css'
 
 const STAFF_LINE_YS = [2, 3, 4, 5, 6]
 // Clef width (28px) + gap (6px) in LeadSheet.css; keep in sync.
 const CLEF_GUTTER = 34
 const MIN_PX_PER_BEAT = 48
-const MAX_BEATS_PER_ROW = 16
+const MAX_MEASURES_PER_ROW = 4
 
-// Barlines sit on measure boundaries (every BEATS_PER_MEASURE beats from the row start),
+// Barlines sit on measure boundaries (every beatsPerMeasure beats from the row start),
 // not between chords, so several short chords can share one measure.
-function barlinePositions(totalBeats) {
+function barlinePositions(totalBeats, beatsPerMeasure) {
   const xs = []
-  for (let x = 0; x < totalBeats; x += BEATS_PER_MEASURE) xs.push(x)
+  for (let x = 0; x < totalBeats; x += beatsPerMeasure) xs.push(x)
   xs.push(totalBeats)
   return xs
 }
 
 // Rows hold a whole number of measures, as many as fit at a legible width per beat.
-function beatsPerRowFor(contentWidth) {
-  if (contentWidth <= 0) return MAX_BEATS_PER_ROW
-  const beats = Math.floor((contentWidth - CLEF_GUTTER) / MIN_PX_PER_BEAT)
-  const measures = Math.max(1, Math.floor(beats / BEATS_PER_MEASURE))
-  return Math.min(MAX_BEATS_PER_ROW, measures * BEATS_PER_MEASURE)
+function beatsPerRowFor(contentWidth, beatsPerMeasure) {
+  if (contentWidth <= 0) return MAX_MEASURES_PER_ROW * beatsPerMeasure
+  const fitBeats = Math.floor((contentWidth - CLEF_GUTTER) / MIN_PX_PER_BEAT)
+  const measures = Math.min(MAX_MEASURES_PER_ROW, Math.max(1, Math.floor(fitBeats / beatsPerMeasure)))
+  return measures * beatsPerMeasure
 }
 
 // A lead sheet shows one chord symbol; labels can list several readings joined by " / ".
@@ -45,9 +44,9 @@ function useContentWidth() {
   return [ref, width]
 }
 
-function StaffRow({ row }) {
+function StaffRow({ row, beatsPerMeasure }) {
   const totalBeats = row.measures.reduce((sum, m) => sum + m.beats, 0) || 1
-  const barlineXs = barlinePositions(totalBeats)
+  const barlineXs = barlinePositions(totalBeats, beatsPerMeasure)
 
   return (
     <div className="leadsheet-row">
@@ -88,9 +87,9 @@ function StaffRow({ row }) {
   )
 }
 
-function LeadSheet({ progression, title }) {
+function LeadSheet({ progression, title, beatsPerMeasure }) {
   const [sheetRef, contentWidth] = useContentWidth()
-  const maxBeatsPerRow = beatsPerRowFor(contentWidth)
+  const maxBeatsPerRow = beatsPerRowFor(contentWidth, beatsPerMeasure)
   const rows = useMemo(
     () => buildLeadSheetRows(progression, maxBeatsPerRow),
     [progression, maxBeatsPerRow],
@@ -117,7 +116,11 @@ function LeadSheet({ progression, title }) {
             {title.trim() && <h2 className="leadsheet-title">{title.trim()}</h2>}
             <div className="leadsheet">
               {rows.map((row, index) => (
-                <StaffRow key={row.measures[0]?.id ?? `label-${index}`} row={row} />
+                <StaffRow
+                  key={row.measures[0]?.id ?? `label-${index}`}
+                  row={row}
+                  beatsPerMeasure={beatsPerMeasure}
+                />
               ))}
             </div>
           </>

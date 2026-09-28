@@ -1,3 +1,5 @@
+import { DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
+
 const STORAGE_KEY = 'pianograph:progression'
 
 function normalizeEntry(entry) {
@@ -65,6 +67,25 @@ export function loadTitle() {
 export function saveTitle(title) {
   try {
     localStorage.setItem(TITLE_KEY, title)
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}
+
+const BEATS_PER_MEASURE_KEY = 'pianograph:beatsPerMeasure'
+
+export function loadBeatsPerMeasure() {
+  try {
+    const value = Number(localStorage.getItem(BEATS_PER_MEASURE_KEY))
+    return TIME_SIGNATURE_OPTIONS.includes(value) ? value : DEFAULT_BEATS_PER_MEASURE
+  } catch {
+    return DEFAULT_BEATS_PER_MEASURE
+  }
+}
+
+export function saveBeatsPerMeasure(beatsPerMeasure) {
+  try {
+    localStorage.setItem(BEATS_PER_MEASURE_KEY, String(beatsPerMeasure))
   } catch {
     // best-effort, same as saveProgression
   }

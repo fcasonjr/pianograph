@@ -5,14 +5,17 @@ import LeadSheet from './components/LeadSheet/LeadSheet'
 import { chordLabel } from './utils/chordDetection'
 import { playChord, playProgression } from './utils/audio'
 import {
+  loadBeatsPerMeasure,
   loadPreferences,
   loadProgression,
   loadTitle,
+  saveBeatsPerMeasure,
   savePreferences,
   saveProgression,
   saveTitle,
 } from './utils/storage'
 import { parseImportedSong } from './utils/importProgression'
+import { TIME_SIGNATURE_OPTIONS } from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
 
@@ -26,6 +29,7 @@ function App() {
   const [view, setView] = useState('builder')
   const [accidentals, setAccidentals] = useState(() => loadPreferences().accidentals)
   const [title, setTitle] = useState(() => loadTitle())
+  const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
   const [clearSignal, setClearSignal] = useState(0)
@@ -53,11 +57,29 @@ function App() {
     )
   }
 
+  function changeBeatsPerMeasure(next) {
+    const previous = beatsPerMeasure
+    setBeatsPerMeasure(next)
+    saveBeatsPerMeasure(next)
+    // Chords that filled exactly one measure keep filling one measure; other lengths are left alone.
+    setProgression((prev) =>
+      prev.map((entry) =>
+        entry.type === 'chord' && entry.beats === previous ? { ...entry, beats: next } : entry,
+      ),
+    )
+  }
+
   function addChord() {
     if (selectedNotes.length === 0) return
     setProgression((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), type: 'chord', label: currentLabel, notes: selectedNotes, beats: 4 },
+      {
+        id: crypto.randomUUID(),
+        type: 'chord',
+        label: currentLabel,
+        notes: selectedNotes,
+        beats: beatsPerMeasure,
+      },
     ])
   }
 
@@ -114,6 +136,8 @@ function App() {
       }
       setProgression(song.progression)
       setTitle(song.title)
+      setBeatsPerMeasure(song.beatsPerMeasure)
+      saveBeatsPerMeasure(song.beatsPerMeasure)
       setImportError('')
     } catch (error) {
       setImportError(`Couldn't import: ${error.message}`)
@@ -192,7 +216,7 @@ function App() {
       </header>
 
       {view === 'leadsheet' ? (
-        <LeadSheet progression={progression} title={title} />
+        <LeadSheet progression={progression} title={title} beatsPerMeasure={beatsPerMeasure} />
       ) : (
         <>
           <section className="panel compose-panel">
@@ -257,7 +281,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsJson(progression, title)}
+                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure)}
                   disabled={progression.length === 0}
                 >
                   Export JSON
@@ -301,6 +325,21 @@ function App() {
                   />
                   BPM
                 </label>
+                <label className="tempo-control">
+                  Time
+                  <select
+                    className="input"
+                    aria-label="Time signature"
+                    value={beatsPerMeasure}
+                    onChange={(e) => changeBeatsPerMeasure(Number(e.target.value))}
+                  >
+                    {TIME_SIGNATURE_OPTIONS.map((n) => (
+                      <option key={n} value={n}>
+                        {n}/4
+                      </option>
+                    ))}
+                  </select>
+                </label>
               </div>
 
               <div className="section-controls">
@@ -328,6 +367,7 @@ function App() {
               onMove={moveChord}
               onDuplicate={duplicateChord}
               onSetBeats={setChordBeats}
+              beatsPerMeasure={beatsPerMeasure}
               onPlayChord={handlePlayChord}
               playDisabled={isPlaying}
               playingChordId={playingChordId}

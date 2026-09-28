@@ -25,6 +25,44 @@
   overflow-wrap: anywhere;
 }
 
+.beat-presets {
+  display: flex;
+  gap: 4px;
+}
+
+.beat-preset {
+  min-width: 32px;
+  height: 28px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.beat-preset:hover:not(.active) {
+  color: var(--text-h);
+  background: var(--surface-2);
+}
+
+.beat-preset.active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+@media (pointer: coarse) {
+  .beat-preset {
+    min-width: 40px;
+    height: 40px;
+  }
+}
+
 .chord-card-beats {
   display: flex;
   align-items: center;
