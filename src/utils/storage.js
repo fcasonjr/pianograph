@@ -51,3 +51,21 @@ export function savePreferences(prefs) {
     // best-effort, same as saveProgression
   }
 }
+
+const TITLE_KEY = 'pianograph:title'
+
+export function loadTitle() {
+  try {
+    return localStorage.getItem(TITLE_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function saveTitle(title) {
+  try {
+    localStorage.setItem(TITLE_KEY, title)
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}

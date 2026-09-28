@@ -15,6 +15,7 @@
   --accent-ring: rgba(124, 58, 237, 0.35);
   --on-accent: #ffffff;
   --success: #16a34a;
+  --danger: #dc2626;
 
   --key-white: #ffffff;
   --key-white-hover: #f1eefc;
@@ -56,6 +57,7 @@
     --accent-soft: rgba(167, 139, 250, 0.16);
     --accent-ring: rgba(167, 139, 250, 0.45);
     --on-accent: #14101f;
+    --danger: #f87171;
 
     --key-white: #e9e8ef;
     --key-white-hover: #ddd9f2;

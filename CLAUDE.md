@@ -52,7 +52,11 @@ This "marker as just another array entry" design is deliberate: reordering (`mov
 
 `ids` are generated with `crypto.randomUUID()`. `App.jsx` lazy-initializes progression state from `src/utils/storage.js` (`localStorage` key `pianograph:progression`) and persists on every change via `useEffect`. Storage reads/writes are wrapped in try/catch since `localStorage` is an external-boundary API that can throw (private browsing, quota); `loadProgression()` also normalizes entries loaded from before `type`/`beats` existed, so old saved data doesn't break — extend that normalization if the entry shape changes again.
 
-`src/utils/exportProgression.js` builds `Blob` + synthetic anchor-click downloads for JSON and plain-text export — no backend involved.
+`src/utils/exportProgression.js` builds `Blob` + synthetic anchor-click downloads for JSON and plain-text export — no backend involved. The JSON shape is `{ title, progression: [...] }` (chord entries drop `id`), and files are named from the song title.
+
+The song title is separate document state in `App.jsx` (`localStorage` key `pianograph:title`). It renders as a heading on the lead sheet (so it prints), and an effect also sets `document.title` because browsers use the page title as the default filename when saving a print as PDF.
+
+`src/utils/importProgression.js` (`parseImportedSong`) is the trust boundary for imported files: it accepts the current `{ title, progression }` shape and older plain-array exports, validates every entry (throwing user-facing `Error` messages the UI shows verbatim), normalizes notes to sharp-spelled ids via Tonal, regenerates all ids, and **recomputes each label** from the notes with the current sharps/flats setting rather than trusting the file. Validation runs before the "replace your current progression?" confirm, so a bad file never prompts. If the entry shape changes again, update this parser, `storage.js`'s `normalizeEntry`, and the exporter together.
 
 ### Leadsheet view and print/PDF export
 

@@ -8,18 +8,29 @@ function downloadFile(filename, content, mimeType) {
   URL.revokeObjectURL(url)
 }
 
-export function exportProgressionAsJson(progression) {
-  const data = progression.map((entry) =>
+function fileBase(title) {
+  const slug = title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return slug || 'pianograph-progression'
+}
+
+export function exportProgressionAsJson(progression, title = '') {
+  const entries = progression.map((entry) =>
     entry.type === 'section'
       ? { type: 'section', name: entry.name }
       : { type: 'chord', label: entry.label, notes: entry.notes, beats: entry.beats },
   )
-  downloadFile('pianograph-progression.json', JSON.stringify(data, null, 2), 'application/json')
+  const data = { title: title.trim(), progression: entries }
+  downloadFile(`${fileBase(title)}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 
-export function exportProgressionAsText(progression) {
-  const text = progression
+export function exportProgressionAsText(progression, title = '') {
+  const chords = progression
     .map((entry) => (entry.type === 'section' ? `-- ${entry.name} --` : entry.label))
     .join('  |  ')
-  downloadFile('pianograph-progression.txt', text, 'text/plain')
+  const text = title.trim() ? `${title.trim()}\n\n${chords}` : chords
+  downloadFile(`${fileBase(title)}.txt`, text, 'text/plain')
 }

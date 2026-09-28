@@ -122,3 +122,16 @@
 .section-name-input {
   width: 180px;
 }
+
+.song-title-input {
+  flex: 1 1 220px;
+  max-width: 340px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.import-error {
+  margin: 0;
+  font-size: 13px;
+  color: var(--danger);
+}

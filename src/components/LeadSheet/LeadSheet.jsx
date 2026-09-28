@@ -54,7 +54,7 @@ function StaffRow({ row }) {
   )
 }
 
-function LeadSheet({ progression }) {
+function LeadSheet({ progression, title }) {
   const rows = useMemo(() => buildLeadSheetRows(progression), [progression])
 
   if (rows.length === 0) {
@@ -73,6 +73,7 @@ function LeadSheet({ progression }) {
         </button>
       </div>
       <div className="leadsheet-sheet">
+        {title.trim() && <h2 className="leadsheet-title">{title.trim()}</h2>}
         <div className="leadsheet">
           {rows.map((row, index) => (
             <StaffRow key={row.measures[0]?.id ?? `label-${index}`} row={row} />

@@ -1,10 +1,18 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Piano from './components/Piano/Piano'
 import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import { chordLabel } from './utils/chordDetection'
 import { playChord, playProgression } from './utils/audio'
-import { loadPreferences, loadProgression, savePreferences, saveProgression } from './utils/storage'
+import {
+  loadPreferences,
+  loadProgression,
+  loadTitle,
+  savePreferences,
+  saveProgression,
+  saveTitle,
+} from './utils/storage'
+import { parseImportedSong } from './utils/importProgression'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
 
@@ -17,10 +25,19 @@ function App() {
   const [sectionName, setSectionName] = useState('')
   const [view, setView] = useState('builder')
   const [accidentals, setAccidentals] = useState(() => loadPreferences().accidentals)
+  const [title, setTitle] = useState(() => loadTitle())
+  const [importError, setImportError] = useState('')
+  const fileInputRef = useRef(null)
 
   useEffect(() => {
     saveProgression(progression)
   }, [progression])
+
+  useEffect(() => {
+    saveTitle(title)
+    // Browsers use the page title as the default filename when saving a print as PDF.
+    document.title = title.trim() ? `${title.trim()} – Pianograph` : 'Pianograph'
+  }, [title])
 
   const currentLabel = chordLabel(selectedNotes, accidentals)
   const chordDisplay = currentLabel || 'Click keys to build a chord'
@@ -80,6 +97,26 @@ function App() {
       next.splice(index + 1, 0, copy)
       return next
     })
+  }
+
+  async function handleImportFile(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      const song = parseImportedSong(await file.text(), accidentals)
+      if (
+        progression.length > 0 &&
+        !window.confirm('Replace your current progression and title with the imported file?')
+      ) {
+        return
+      }
+      setProgression(song.progression)
+      setTitle(song.title)
+      setImportError('')
+    } catch (error) {
+      setImportError(`Couldn't import: ${error.message}`)
+    }
   }
 
   function clearProgression() {
@@ -154,7 +191,7 @@ function App() {
       </header>
 
       {view === 'leadsheet' ? (
-        <LeadSheet progression={progression} />
+        <LeadSheet progression={progression} title={title} />
       ) : (
         <>
           <section className="panel compose-panel">
@@ -174,7 +211,15 @@ function App() {
 
           <section className="panel">
             <div className="panel-head">
-              <h2 className="panel-title">Progression</h2>
+              <input
+                type="text"
+                className="input song-title-input"
+                aria-label="Song title"
+                placeholder="Song title (optional)"
+                maxLength={120}
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
               <div className="progression-actions">
                 <button
                   type="button"
@@ -187,7 +232,21 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsJson(progression)}
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  Import JSON
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".json,application/json"
+                  hidden
+                  onChange={handleImportFile}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => exportProgressionAsJson(progression, title)}
                   disabled={progression.length === 0}
                 >
                   Export JSON
@@ -195,13 +254,19 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsText(progression)}
+                  onClick={() => exportProgressionAsText(progression, title)}
                   disabled={progression.length === 0}
                 >
                   Export text
                 </button>
               </div>
             </div>
+
+            {importError && (
+              <p className="import-error" role="alert">
+                {importError}
+              </p>
+            )}
 
             <div className="toolbar">
               <div className="progression-controls">
