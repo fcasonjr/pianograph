@@ -44,3 +44,18 @@ h1 {
   color: var(--text-h);
   margin: 0 0 24px;
 }
+
+@media print {
+  @page {
+    margin: 1cm;
+  }
+
+  #root {
+    min-height: auto;
+    padding: 0;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}

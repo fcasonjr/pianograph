@@ -1,0 +1,116 @@
+.leadsheet-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.print-button {
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--text-h);
+  color: var(--bg);
+  cursor: pointer;
+}
+
+.print-button:hover {
+  opacity: 0.9;
+}
+
+.leadsheet {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.leadsheet-empty {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.leadsheet-row-label {
+  font-size: 22px;
+  font-weight: 700;
+  color: #7c3aed;
+  margin-bottom: 4px;
+}
+
+.leadsheet-staff-line {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+}
+
+.leadsheet-clef {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 76px;
+  font-size: 44px;
+  line-height: 1;
+  color: var(--text-h);
+}
+
+.leadsheet-staff-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.leadsheet-annotations {
+  display: flex;
+  align-items: flex-end;
+  gap: 0;
+  padding-bottom: 6px;
+}
+
+.leadsheet-annotation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 6px;
+  box-sizing: border-box;
+}
+
+.leadsheet-chord-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-h);
+  white-space: nowrap;
+}
+
+.leadsheet-staff-svg {
+  display: block;
+  width: 100%;
+  height: 76px;
+}
+
+.leadsheet-staff-hairline {
+  stroke: #999;
+  stroke-width: 0.05;
+}
+
+.leadsheet-barline {
+  stroke: #333;
+  stroke-width: 0.08;
+}
+
+@media print {
+  .leadsheet {
+    max-width: none;
+    gap: 20px;
+  }
+
+  .leadsheet-row {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

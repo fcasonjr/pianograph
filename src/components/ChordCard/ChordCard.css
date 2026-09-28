@@ -1,13 +1,18 @@
 .chord-card {
-  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 6px;
+  padding: 8px 14px 12px;
   border: 1px solid var(--border);
   border-radius: 8px;
   background: var(--bg);
+  transition: border-color 0.1s ease, box-shadow 0.1s ease;
+}
+
+.chord-card.playing {
+  border-color: #7c3aed;
+  box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.35);
 }
 
 .chord-card-name {
@@ -17,62 +22,53 @@
   white-space: nowrap;
 }
 
-.chord-card-remove {
-  position: absolute;
-  top: 2px;
-  right: 4px;
+.chord-card-actions {
+  display: flex;
+  gap: 2px;
+  justify-content: center;
+}
+
+.chord-card-actions button {
   border: none;
   background: transparent;
   color: var(--text);
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1;
   cursor: pointer;
-  padding: 2px;
+  padding: 3px 5px;
+  border-radius: 4px;
 }
 
-.chord-card-remove:hover {
+.chord-card-actions button:hover:not(:disabled) {
   color: var(--text-h);
+  background: rgba(127, 127, 127, 0.12);
 }
 
-.mini-piano {
-  --mini-key-width: 8px;
-  --mini-black-key-width: 5px;
+.chord-card-actions button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
 
-  position: relative;
+.chord-card-beats {
   display: flex;
-  width: calc(var(--key-count) * var(--mini-key-width));
-  height: 36px;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text);
 }
 
-.mini-key {
-  box-sizing: border-box;
-  border: 1px solid #2a2a2a;
+.chord-card-beats button {
+  border: none;
+  background: transparent;
+  color: var(--text);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 5px;
+  border-radius: 4px;
 }
 
-.mini-key-white {
-  flex: 0 0 var(--mini-key-width);
-  height: 100%;
-  background: #fdfdfd;
-  border-radius: 0 0 2px 2px;
-}
-
-.mini-key-white.active {
-  background: #c4b5fd;
-}
-
-.mini-key-black {
-  position: absolute;
-  top: 0;
-  left: calc(
-    (var(--after-index) + 1) * var(--mini-key-width) - (var(--mini-black-key-width) / 2)
-  );
-  width: var(--mini-black-key-width);
-  height: 60%;
-  background: #1c1c1c;
-  border-radius: 0 0 1px 1px;
-  z-index: 2;
-}
-
-.mini-key-black.active {
-  background: #7c3aed;
+.chord-card-beats button:hover {
+  color: var(--text-h);
+  background: rgba(127, 127, 127, 0.12);
 }

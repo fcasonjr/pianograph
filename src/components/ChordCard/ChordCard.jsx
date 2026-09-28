@@ -1,40 +1,75 @@
-import { useMemo } from 'react'
-import { generateKeys } from '../../utils/pianoKeys'
-import { START_OCTAVE, OCTAVE_COUNT } from '../../constants'
+import PianoDiagram from '../PianoDiagram/PianoDiagram'
 import './ChordCard.css'
 
-function ChordCard({ label, notes, startOctave = START_OCTAVE, octaveCount = OCTAVE_COUNT, onRemove }) {
-  const { whiteKeys, blackKeys } = useMemo(
-    () => generateKeys(startOctave, octaveCount),
-    [startOctave, octaveCount],
-  )
-  const noteSet = useMemo(() => new Set(notes), [notes])
-
+function ChordCard({
+  label,
+  notes,
+  beats,
+  onSetBeats,
+  onRemove,
+  onMoveLeft,
+  onMoveRight,
+  onDuplicate,
+  isFirst,
+  isLast,
+  onPlay,
+  playDisabled,
+  isPlaying,
+}) {
   return (
-    <div className="chord-card">
-      <button
-        type="button"
-        className="chord-card-remove"
-        onClick={onRemove}
-        aria-label={`Remove ${label}`}
-      >
-        ×
-      </button>
+    <div className={`chord-card ${isPlaying ? 'playing' : ''}`}>
+      <div className="chord-card-actions">
+        <button
+          type="button"
+          onClick={onPlay}
+          disabled={playDisabled}
+          aria-label={`Play ${label}`}
+        >
+          ▶
+        </button>
+        <button
+          type="button"
+          onClick={onMoveLeft}
+          disabled={isFirst}
+          aria-label={`Move ${label} left`}
+        >
+          ←
+        </button>
+        <button
+          type="button"
+          onClick={onMoveRight}
+          disabled={isLast}
+          aria-label={`Move ${label} right`}
+        >
+          →
+        </button>
+        <button type="button" onClick={onDuplicate} aria-label={`Duplicate ${label}`}>
+          ⧉
+        </button>
+        <button type="button" onClick={onRemove} aria-label={`Remove ${label}`}>
+          ×
+        </button>
+      </div>
       <div className="chord-card-name">{label}</div>
-      <div className="mini-piano" style={{ '--key-count': whiteKeys.length }}>
-        {whiteKeys.map((key) => (
-          <div
-            key={key.id}
-            className={`mini-key mini-key-white ${noteSet.has(key.id) ? 'active' : ''}`}
-          />
-        ))}
-        {blackKeys.map((key) => (
-          <div
-            key={key.id}
-            className={`mini-key mini-key-black ${noteSet.has(key.id) ? 'active' : ''}`}
-            style={{ '--after-index': key.afterIndex }}
-          />
-        ))}
+      <PianoDiagram notes={notes} />
+      <div className="chord-card-beats">
+        <button
+          type="button"
+          onClick={() => onSetBeats(Math.max(1, beats - 1))}
+          aria-label={`Decrease beats for ${label}`}
+        >
+          −
+        </button>
+        <span>
+          {beats} beat{beats === 1 ? '' : 's'}
+        </span>
+        <button
+          type="button"
+          onClick={() => onSetBeats(Math.min(32, beats + 1))}
+          aria-label={`Increase beats for ${label}`}
+        >
+          +
+        </button>
       </div>
     </div>
   )
