@@ -5,6 +5,28 @@
   width: 100%;
 }
 
+.midi-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+}
+
+.midi-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.midi-option input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+
 .midi-status {
   display: inline-flex;
   align-items: center;

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import Piano from './components/Piano/Piano'
 import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
+import HelpDialog from './components/HelpDialog/HelpDialog'
 import { chordLabel } from './utils/chordDetection'
 import { loadPiano, playChord, playProgression } from './utils/audio'
 import {
@@ -28,6 +29,7 @@ function App() {
   const [sectionName, setSectionName] = useState('')
   const [view, setView] = useState('builder')
   const [accidentals, setAccidentals] = useState(() => loadPreferences().accidentals)
+  const [midiAutoAdd, setMidiAutoAdd] = useState(() => loadPreferences().midiAutoAdd)
   const [title, setTitle] = useState(() => loadTitle())
   const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
   const [importError, setImportError] = useState('')
@@ -54,7 +56,7 @@ function App() {
 
   function changeAccidentals(next) {
     setAccidentals(next)
-    savePreferences({ accidentals: next })
+    savePreferences({ accidentals: next, midiAutoAdd })
     setProgression((prev) =>
       prev.map((entry) =>
         entry.type === 'section' ? entry : { ...entry, label: chordLabel(entry.notes, next) },
@@ -86,6 +88,19 @@ function App() {
         beats: beatsPerMeasure,
       },
     ])
+  }
+
+  function changeMidiAutoAdd(next) {
+    setMidiAutoAdd(next)
+    savePreferences({ accidentals, midiAutoAdd: next })
+  }
+
+  // The MIDI keyboard's hands-free path (auto-add on release, sustain pedal): add the chord, then wipe the
+  // keyboard so the next chord starts fresh. The Add chord button leaves the selection alone.
+  function commitMidiChord() {
+    if (selectedNotes.length === 0) return
+    addChord()
+    setClearSignal((n) => n + 1)
   }
 
   function addSection() {
@@ -245,6 +260,7 @@ function App() {
               Lead sheet
             </button>
           </div>
+          <HelpDialog />
         </div>
       </header>
 
@@ -274,7 +290,13 @@ function App() {
                 </button>
               </div>
             </div>
-            <Piano onNotesChange={setSelectedNotes} clearSignal={clearSignal} />
+            <Piano
+              onNotesChange={setSelectedNotes}
+              clearSignal={clearSignal}
+              midiAutoAdd={midiAutoAdd}
+              onMidiAutoAddChange={changeMidiAutoAdd}
+              onMidiCommit={commitMidiChord}
+            />
           </section>
 
           <section className="panel">

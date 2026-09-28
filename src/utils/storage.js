@@ -42,9 +42,12 @@ const PREFS_KEY = 'pianograph:preferences'
 export function loadPreferences() {
   try {
     const parsed = JSON.parse(localStorage.getItem(PREFS_KEY) ?? '{}')
-    return { accidentals: parsed?.accidentals === 'flats' ? 'flats' : 'sharps' }
+    return {
+      accidentals: parsed?.accidentals === 'flats' ? 'flats' : 'sharps',
+      midiAutoAdd: parsed?.midiAutoAdd !== false,
+    }
   } catch {
-    return { accidentals: 'sharps' }
+    return { accidentals: 'sharps', midiAutoAdd: true }
   }
 }
 

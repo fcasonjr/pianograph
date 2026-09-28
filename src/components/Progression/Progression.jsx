@@ -16,7 +16,17 @@ function Progression({
   playingChordId,
 }) {
   if (chords.length === 0) {
-    return <p className="progression-empty">Your progression will appear here</p>
+    return (
+      <div className="progression-empty">
+        <p className="progression-empty-title">Your progression will appear here</p>
+        <ol className="progression-empty-steps">
+          <li>Click piano keys above to build a chord.</li>
+          <li>Press Add chord to save it here.</li>
+          <li>Repeat, then open the Lead sheet tab to print or share.</li>
+        </ol>
+        <p className="progression-empty-note">Use the ? button at the top for more tips.</p>
+      </div>
+    )
   }
 
   return (

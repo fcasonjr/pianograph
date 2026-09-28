@@ -4,6 +4,8 @@ const NOTE_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 
 
 const NOTE_ON = 0x90
 const NOTE_OFF = 0x80
+const CONTROL_CHANGE = 0xb0
+const SUSTAIN_PEDAL = 64
 
 function midiNoteToId(number) {
   const name = NOTE_NAMES[number % 12]
@@ -11,13 +13,13 @@ function midiNoteToId(number) {
   return `${name}${octave}`
 }
 
-export function useMidiInput({ onNoteOn, onNoteOff }) {
+export function useMidiInput({ onNoteOn, onNoteOff, onSustain }) {
   const [supported] = useState(
     () => typeof navigator !== 'undefined' && 'requestMIDIAccess' in navigator,
   )
   const [devices, setDevices] = useState([])
-  const handlersRef = useRef({ onNoteOn, onNoteOff })
-  handlersRef.current = { onNoteOn, onNoteOff }
+  const handlersRef = useRef({ onNoteOn, onNoteOff, onSustain })
+  handlersRef.current = { onNoteOn, onNoteOff, onSustain }
 
   useEffect(() => {
     if (!supported) return
@@ -28,6 +30,13 @@ export function useMidiInput({ onNoteOn, onNoteOff }) {
     function handleMessage(event) {
       const [status, note, velocity] = event.data
       const command = status & 0xf0
+
+      if (command === CONTROL_CHANGE) {
+        // For control changes `note` is the controller number and `velocity` its value (64+ = pedal down).
+        if (note === SUSTAIN_PEDAL) handlersRef.current.onSustain?.(velocity >= 64)
+        return
+      }
+
       const noteId = midiNoteToId(note)
 
       if (command === NOTE_ON && velocity > 0) {
