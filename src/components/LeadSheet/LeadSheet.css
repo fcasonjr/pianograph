@@ -123,12 +123,86 @@
 
 .leadsheet-staff-hairline {
   stroke: #8d8a99;
-  stroke-width: 0.05;
+  stroke-width: 1px;
+  vector-effect: non-scaling-stroke;
 }
 
 .leadsheet-barline {
   stroke: #2a2733;
-  stroke-width: 0.08;
+  stroke-width: 1.5px;
+  vector-effect: non-scaling-stroke;
+}
+
+.leadsheet-staff-wrap {
+  position: relative;
+}
+
+/* Repeat glyphs are HTML (not SVG) because the staff SVG is stretched non-uniformly, which would squash the dots. */
+.repeat-mark {
+  position: absolute;
+  top: 18.75%;
+  height: 62.5%;
+  display: flex;
+  align-items: stretch;
+  gap: 3px;
+  pointer-events: none;
+}
+
+.repeat-mark.end {
+  flex-direction: row-reverse;
+  transform: translateX(-100%);
+}
+
+.rm-thick {
+  width: 4px;
+  background: var(--ink);
+}
+
+.rm-thin {
+  width: 1.5px;
+  background: var(--ink);
+}
+
+.rm-dots {
+  position: relative;
+  width: 5px;
+}
+
+.rm-dots i {
+  position: absolute;
+  left: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--ink);
+  transform: translateY(-50%);
+}
+
+.rm-dots i:nth-child(1) {
+  top: 40%;
+}
+
+.rm-dots i:nth-child(2) {
+  top: 60%;
+}
+
+.leadsheet-endings {
+  position: relative;
+  height: 24px;
+  margin-bottom: 6px;
+}
+
+.leadsheet-ending {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  padding: 3px 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--ink);
+  border-top: 2px solid var(--ink);
+  border-left: 2px solid var(--ink);
 }
 
 @media (max-width: 640px) {

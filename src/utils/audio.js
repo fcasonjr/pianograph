@@ -1,4 +1,5 @@
 import * as Tone from 'tone'
+import { unfoldRepeats } from './repeats'
 
 let synth = null
 
@@ -30,7 +31,8 @@ export function stopNote(note) {
 }
 
 export async function playProgression(chords, bpm, { onStepChange } = {}) {
-  const playable = chords.filter((chord) => chord.type !== 'section' && chord.notes?.length > 0)
+  // Repeats and endings are unfolded into play order (a repeated chord is scheduled, and highlighted, twice).
+  const playable = unfoldRepeats(chords).filter((chord) => chord.notes?.length > 0)
   if (playable.length === 0) return 0
 
   await Tone.start()

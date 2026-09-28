@@ -63,6 +63,11 @@
   }
 }
 
+.mark-chip {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.02em;
+}
+
 .chord-card-beats {
   display: flex;
   align-items: center;

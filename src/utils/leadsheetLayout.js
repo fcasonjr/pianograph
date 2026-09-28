@@ -1,3 +1,5 @@
+import { cleanMarks } from './repeats'
+
 const DEFAULT_MAX_BEATS_PER_ROW = 16
 
 export function buildLeadSheetRows(progression, maxBeatsPerRow = DEFAULT_MAX_BEATS_PER_ROW) {
@@ -27,6 +29,7 @@ export function buildLeadSheetRows(progression, maxBeatsPerRow = DEFAULT_MAX_BEA
       label: entry.label,
       notes: entry.notes,
       beats: entry.beats,
+      ...cleanMarks(entry),
     })
   })
 

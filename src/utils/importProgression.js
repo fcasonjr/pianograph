@@ -1,5 +1,6 @@
 import { Note } from 'tonal'
 import { chordLabel } from './chordDetection'
+import { cleanMarks } from './repeats'
 import { DEFAULT_BEATS_PER_MEASURE, MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS } from '../constants'
 
 const MAX_TITLE_LENGTH = 120
@@ -40,6 +41,7 @@ function parseEntry(raw, index, accidentals, defaultBeats) {
     label: chordLabel(notes, accidentals),
     notes,
     beats,
+    ...cleanMarks(raw),
   }
 }
 

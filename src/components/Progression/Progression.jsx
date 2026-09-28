@@ -7,7 +7,7 @@ function Progression({
   onRemove,
   onMove,
   onDuplicate,
-  onSetBeats,
+  onUpdate,
   beatsPerMeasure,
   onPlayChord,
   playDisabled,
@@ -44,7 +44,11 @@ function Progression({
             notes={entry.notes}
             beats={entry.beats}
             beatsPerMeasure={beatsPerMeasure}
-            onSetBeats={(beats) => onSetBeats(entry.id, beats)}
+            onSetBeats={(beats) => onUpdate(entry.id, { beats })}
+            onSetMarks={(patch) => onUpdate(entry.id, patch)}
+            repeatStart={entry.repeatStart}
+            repeatEnd={entry.repeatEnd}
+            ending={entry.ending}
             onRemove={() => onRemove(entry.id)}
             onMoveLeft={() => onMove(entry.id, -1)}
             onMoveRight={() => onMove(entry.id, 1)}

@@ -90,9 +90,9 @@ function App() {
     setSectionName('')
   }
 
-  function setChordBeats(id, beats) {
+  function updateChord(id, patch) {
     setProgression((prev) =>
-      prev.map((entry) => (entry.id === id ? { ...entry, beats } : entry)),
+      prev.map((entry) => (entry.id === id ? { ...entry, ...patch } : entry)),
     )
   }
 
@@ -115,7 +115,8 @@ function App() {
     setProgression((prev) => {
       const index = prev.findIndex((chord) => chord.id === id)
       if (index === -1) return prev
-      const copy = { ...prev[index], id: crypto.randomUUID() }
+      // A copy keeps its ending (copying a 2-bar ending is useful) but not its repeat barlines.
+      const copy = { ...prev[index], id: crypto.randomUUID(), repeatStart: false, repeatEnd: false }
       const next = [...prev]
       next.splice(index + 1, 0, copy)
       return next
@@ -366,7 +367,7 @@ function App() {
               onRemove={removeChord}
               onMove={moveChord}
               onDuplicate={duplicateChord}
-              onSetBeats={setChordBeats}
+              onUpdate={updateChord}
               beatsPerMeasure={beatsPerMeasure}
               onPlayChord={handlePlayChord}
               playDisabled={isPlaying}
