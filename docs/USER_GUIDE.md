@@ -1,0 +1,170 @@
+# Pianograph user guide
+
+Pianograph turns chords you play into a lead sheet you can print or share. You build each chord on a piano keyboard, arrange the chords into a song, and the app draws a staff with a piano-key diagram and the chord name over every chord.
+
+- [Quick start](#quick-start)
+- [Building chords](#building-chords)
+- [Using a MIDI keyboard](#using-a-midi-keyboard)
+- [Arranging the progression](#arranging-the-progression)
+- [Measures and time signatures](#measures-and-time-signatures)
+- [Sections](#sections)
+- [Repeats and endings](#repeats-and-endings)
+- [Playing it back](#playing-it-back)
+- [The lead sheet](#the-lead-sheet)
+- [Printing, PDF, and sharing](#printing-pdf-and-sharing)
+- [Saving, backing up, and moving songs](#saving-backing-up-and-moving-songs)
+- [Troubleshooting](#troubleshooting)
+
+## Quick start
+
+1. Click piano keys to select the notes of a chord. The chord name appears above the keyboard.
+2. Press **Add chord**. The chord is saved as a card in the Progression panel below.
+3. Press **Clear keyboard** (or click the keys again to deselect them) and build the next chord.
+4. When you have all your chords, type a song title and open the **Lead sheet** tab at the top.
+5. Use **Print / Save as PDF**, **Download PNG**, or **Share**.
+
+The **?** button in the top right opens a short version of this guide inside the app.
+
+## Building chords
+
+The keyboard covers four octaves, C2 to B5, so a two-handed voicing with a low bass note fits. On a narrow screen the keyboard scrolls sideways instead of shrinking the keys.
+
+**Selecting notes.** Click a key to select it and click it again to deselect it. You hear each note as you select it, so you can check it's the right one. Selected keys are highlighted.
+
+**Chord names.** As you select notes, the app detects the chord and shows its name above the keyboard, for example `Cmaj7`, `Dm7`, or a slash chord such as `C/E`. Some note groups fit more than one name, and then you see several separated by slashes, for example `Dm7 / F6/D`. The lowest note is treated as the bass, so the same notes played with a different bass note can have a different name. A single note is shown as just its letter name.
+
+If the notes don't match a known chord, the display says **No chord match**. You can still add the chord. The card and lead sheet will show that text, so add it only if that is what you want.
+
+**Sharps or flats.** The **♯ Sharps / ♭ Flats** switch in the header decides how chord names are spelled (`D#maj7` or `Ebmaj7`). Changing it renames every chord already in your song.
+
+**Clear keyboard** deselects all notes without touching your saved chords, so you can move on to the next chord without deselecting each note.
+
+## Using a MIDI keyboard
+
+Plug in a MIDI keyboard and open Pianograph in **Chrome or Edge on a computer**. When the browser asks for permission to use MIDI devices, allow it. The status line above the keyboard changes to "MIDI connected" and shows the device name. Safari, Firefox, and iPad browsers can't use MIDI.
+
+- Pressing a key selects that note and plays it. Notes stay selected after you let go, so you can play a chord with both hands and lift them.
+- Notes outside the on-screen range (C2 to B5) are ignored.
+
+There are three ways to add the chord you played:
+
+| Way | How it works |
+|---|---|
+| **Add chord when I lift my hands** | A checkbox next to the MIDI status, on by default. About a third of a second after the last key comes up, the chord is added and the keyboard clears for the next chord. The short pause means hands that lift a moment apart still make one chord, and notes you press within that pause join the same chord. |
+| **Sustain pedal** | Pressing the pedal adds the chord immediately and clears the keyboard. It does nothing if no notes are selected. |
+| **Add chord button** | Works as always. It does not clear the keyboard afterwards. |
+
+Untick the checkbox if you'd rather add chords yourself. Your choice is remembered. If you habitually use the sustain pedal while playing, note that pressing it mid-chord adds the chord.
+
+Mouse clicks never add a chord automatically.
+
+## Arranging the progression
+
+Each saved chord is a card showing its name, a small keyboard diagram of its notes, and its controls:
+
+| Control | What it does |
+|---|---|
+| **▶** | Plays that chord. |
+| **← →** | Moves the chord earlier or later in the song. |
+| **⧉** | Duplicates the chord right after itself. Handy when a chord returns later. |
+| **×** | Removes the chord. There is no undo. |
+| **§** | Starts a section just before this chord (see [Sections](#sections)). |
+| Number buttons and **− / +** | Set how many beats the chord lasts (see below). |
+| **\|:  :\|  1.  2.** | Repeat and ending marks (see [Repeats and endings](#repeats-and-endings)). |
+
+**Clear** at the top of the Progression panel removes every chord and section at once. It doesn't ask for confirmation and can't be undone, so export first if you might want the song back.
+
+## Measures and time signatures
+
+A chord's **length is measured in beats**, and a measure is a fixed number of beats. So a measure can hold one long chord or several short ones.
+
+- New chords fill one full measure by default.
+- The number buttons on a card are one-click lengths: 1 beat, 2 beats, one measure, and two measures. Use **−** and **+** for anything else, up to 32 beats.
+- Two chords of 2 beats each in 4/4 share one measure. On the lead sheet they sit side by side above the same measure.
+
+The **Time** menu next to the tempo sets the time signature for the whole song: 2/4, 3/4, 4/4, 5/4, or 6/4. When you change it, chords that filled exactly one measure are changed to fill one measure of the new length. Chords with any other length keep their lengths.
+
+## Sections
+
+Sections are labels such as **A**, **B**, or **Bridge**, common in jazz standards. Each section starts a new row on the lead sheet, with its label at the left.
+
+- **Add section:** type a name in the "Section name" box and press **Add section** to append the section at the end of the song. Chords you add next go after it.
+- **§ button on a card:** starts a section right before that chord. Use this to label a part of a song you've already entered. The app suggests the next unused letter, and you can type a different name. The button is disabled on a chord that already starts a section.
+- **Rename:** click the section's name badge in the progression.
+- **Move or delete:** sections have ← → and × buttons, and move like chords.
+
+## Repeats and endings
+
+Each card has four small toggle buttons for repeat marks:
+
+- **|:** puts a start-repeat sign before the chord.
+- **:|** puts an end-repeat sign after the chord. The music goes back and plays the repeated part once more.
+- **1.** and **2.** mark the chord as part of a first or second ending. Click again to turn one off.
+
+A typical chart: put **|:** on the first chord of the section, mark the last chords of the first pass with **1.** (putting **:|** on the last one), then mark the chords that follow with **2.**. On playback you get the section, then the section again with the second ending in place of the first.
+
+Things to know:
+
+- If a repeat has no **|:**, it goes back to the start of its section (or the last repeat).
+- Only first and second endings are supported. There are no repeat counts, nested repeats, D.S., D.C., or Coda.
+- Repeats are drawn as proper repeat barlines, and endings as bracketed "1." and "2." marks above the staff. If a repeat runs onto a second row, the bracket is continued there.
+- Duplicating a chord copies its ending but not its repeat signs, so you never get two start signs by accident.
+
+## Playing it back
+
+- **▶ Play progression** plays the whole song from the top. The card being played is highlighted.
+- **Tempo** sets the speed in beats per minute (40 to 300). Each chord sounds for as many beats as you gave it.
+- Playback follows your repeats and endings, so a repeated chord plays, and lights up, twice.
+- The sound is a real piano recording. While the recordings load at startup, or if they can't load, you hear a simpler synth instead.
+- Sound starts only after you click something, which is a browser rule. On an iPad, tap once if you hear nothing at first.
+
+## The lead sheet
+
+Open the **Lead sheet** tab to see the finished chart. It is always drawn as black ink on white paper, even if your device uses dark mode.
+
+- **Title** at the top comes from the Song title box. Set it before printing or sharing, because it also names the files you save.
+- Each **section** starts a new row. Within a row, chords are spaced by how long they last, and barlines mark each measure.
+- Each chord has its **name** and a **piano diagram** with the played keys highlighted. Where a chord has several possible names, the sheet shows the first one.
+- The number of measures per row adapts to the screen width, up to four, so an iPad shows shorter rows than a desktop. Rows with very short chords hold fewer measures so that the diagrams stay readable.
+
+## Printing, PDF, and sharing
+
+The lead sheet toolbar has these buttons:
+
+- **Print / Save as PDF** opens your browser's print dialog. Choose "Save as PDF" as the destination for a PDF. The PDF is vector-based, so it stays sharp when zoomed, and your song title appears in the suggested file name.
+- **Download PNG** saves the sheet as an image at twice the on-screen size.
+- **Share** opens the phone or iPad share sheet so you can send the image by Messages, Mail, AirDrop, and so on. It appears only in browsers that can share files, and only on secure (https) pages.
+
+While the image is being prepared you may see "Preparing image…" for a moment. If the image can't be created, use Print / Save as PDF instead.
+
+On an iPad, printing from Safari's Share menu also gives you a PDF you can save to Files or open in another app.
+
+## Saving, backing up, and moving songs
+
+Your song is **saved automatically** in your browser as you work, including its title, time signature, and chords. There is no account and no server. That has two consequences:
+
+- The song exists only in that browser on that device. Your computer and your iPad each have their own separate copy.
+- Clearing your browser's site data, or using a private window, can lose it.
+
+To back up or move a song, use the buttons in the Progression panel:
+
+- **Export JSON** downloads the whole song. **Import JSON** loads such a file. If you already have chords, the app asks before replacing them. A file that can't be read is rejected with a message, and nothing changes.
+- **Export text** downloads a plain-text version of the chord chart, such as `|: Cmaj7  |  Am7 :|`. It can't be imported again.
+
+To move a song to your iPad: on the computer, choose Export JSON, send the file to the iPad (AirDrop or email works), then on the iPad open Pianograph and use Import JSON.
+
+## Troubleshooting
+
+**The chord shows "No chord match."** The notes may not form a chord the app knows, or a note may be missing. Check the selected keys, or add the chord anyway if it's what you want.
+
+**I can't hear anything.** Check that your volume is up and the device isn't muted. Click a key or press ▶ to start the sound, since browsers block audio until you interact with the page. Sound needs a moment to load when the app first opens.
+
+**The MIDI keyboard isn't detected.** Use Chrome or Edge on a computer, allow the MIDI permission prompt, and reconnect the keyboard. Close other programs that may be using it.
+
+**A chord got added by mistake with a MIDI keyboard.** Delete it with **×**, or turn off "Add chord when I lift my hands".
+
+**The Share button isn't there.** It appears only where the browser can share files over https. Use Download PNG or Print / Save as PDF instead.
+
+**My songs are missing.** Songs are stored per browser. If you switched browsers or devices, use Export JSON and Import JSON to bring the song across.
+
+**The keys are hard to read on the lead sheet.** Chords with wide voicings are drawn a bit smaller. Making the browser window wider, or using a landscape iPad, gives each diagram more room.

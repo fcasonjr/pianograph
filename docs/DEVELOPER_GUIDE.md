@@ -1,0 +1,236 @@
+# Pianograph developer guide
+
+How the code is put together, and the decisions behind it. For what the app does, see the [user guide](USER_GUIDE.md). [CLAUDE.md](../CLAUDE.md) holds the same architecture notes in the form used by AI coding assistants, and is kept in step with this guide.
+
+- [Setup and commands](#setup-and-commands)
+- [Stack](#stack)
+- [The big picture](#the-big-picture)
+- [Data model](#data-model)
+- [Persistence and file formats](#persistence-and-file-formats)
+- [Input: keyboard, mouse, and MIDI](#input-keyboard-mouse-and-midi)
+- [Chord detection](#chord-detection)
+- [Audio](#audio)
+- [Repeats](#repeats)
+- [The lead sheet](#the-lead-sheet)
+- [Image export and sharing](#image-export-and-sharing)
+- [Styling](#styling)
+- [Testing and verification](#testing-and-verification)
+- [Deployment](#deployment)
+- [Making common changes](#making-common-changes)
+- [Known limitations](#known-limitations)
+
+## Setup and commands
+
+Requires Node 20.19+ or 22.12+.
+
+```bash
+npm install
+npm run dev       # Vite dev server on http://localhost:5173
+npm run build     # production build to dist/
+npm run preview   # serve dist/ locally
+npm run lint      # Oxlint
+```
+
+Lint currently reports one known warning, `react(refs)` on `handlersRef.current = …` in `src/hooks/useMidiInput.js`. It is the deliberate "latest callback in a ref" pattern and can be left alone. There is no test runner (see [Testing and verification](#testing-and-verification)).
+
+## Stack
+
+React 19 and Vite 8 in plain JavaScript (no TypeScript). Tone.js for audio, Tonal for chord detection, and html-to-image for PNG export. The staff, keyboard diagrams, and treble clef are hand-drawn SVG and CSS, since the app has chord data but no melody, so an engraving library isn't needed.
+
+## The big picture
+
+```
+ Piano (mouse + MIDI)  ──►  App state  ──►  Progression cards  ──►  Lead sheet
+   selected notes           progression       (edit the song)        │
+        │                   title, meter                              ├─ print / PDF
+        ▼                   preferences                               └─ PNG / share sheet
+  chord detection (Tonal)          │
+                                   ▼
+                          audio playback (Tone.js)
+```
+
+`App.jsx` owns all song-level state and every handler that changes it; components below it are mostly presentational. State that belongs to one widget stays local: `Piano` owns the set of selected notes.
+
+One decision shapes the whole codebase: **notes are strings in scientific pitch notation, sharp-spelled** (`"C4"`, `"D#4"`). Key ids, MIDI input, Tone.js, and Tonal all use this format directly, so there is no conversion layer. Flats appear only in displayed chord names.
+
+### Source map
+
+| Path | Role |
+|---|---|
+| `src/App.jsx` | State, handlers, header, builder view. |
+| `src/components/Piano/` | Interactive keyboard, selection state, MIDI behavior. |
+| `src/components/PianoDiagram/` | The read-only mini keyboard, shared by the cards and the lead sheet. |
+| `src/components/ChordCard/`, `SectionMarker/`, `Progression/` | The editable progression. |
+| `src/components/LeadSheet/` | Lead sheet rendering, row sizing, the image-preparation hook. |
+| `src/components/HelpDialog/` | The in-app help dialog. |
+| `src/hooks/useMidiInput.js` | Web MIDI subscription (notes and the sustain pedal). |
+| `src/utils/` | Pure logic: detection, audio, layout, repeats, storage, import/export. |
+| `src/constants.js` | Octave range, time signature options, chord length limit. |
+| `public/` | Files copied as-is: the piano samples and Netlify's `_headers`. |
+
+## Data model
+
+The progression is one flat array of two kinds of entry, told apart by `type`:
+
+```js
+// A chord
+{ id, type: 'chord', label, notes, beats,
+  repeatStart?, repeatEnd?, ending? }   // ending is 1 or 2
+// A section marker
+{ id, type: 'section', name }
+```
+
+- `label` is the stored chord name string, so it is **recomputed** whenever the sharps/flats preference changes or a file is imported.
+- `beats` is the chord's length. The time signature is song-level state (`beatsPerMeasure`, the "N" in N/4), not part of any chord. A measure is not a chord: several short chords can share one.
+- Repeat marks are flags on the chord rather than separate entries. Attaching them to a chord keeps them attached when the chord moves, and keeps reordering, duplication, and removal generic over `id`. `cleanMarks` in `utils/repeats.js` is the single place that validates these fields.
+- Sections and chords sit in the same array on purpose: `moveChord`, `duplicateChord`, and `removeChord` work on both without special cases. Code that must tell them apart (rendering, playback, export) checks `entry.type`.
+- `id`s come from `crypto.randomUUID()` and are regenerated on import.
+
+## Persistence and file formats
+
+Everything persists to `localStorage` on every change, with all reads and writes wrapped in try/catch because storage can throw (private browsing, quota).
+
+| Key | Contents |
+|---|---|
+| `pianograph:progression` | The entry array. |
+| `pianograph:title` | Song title. |
+| `pianograph:beatsPerMeasure` | 2–6. |
+| `pianograph:preferences` | `{ accidentals: 'sharps' \| 'flats', midiAutoAdd: boolean }`. |
+
+`storage.js` normalizes older saved data (entries from before `type` or `beats` existed), so extend `normalizeEntry` if the shape changes.
+
+**Export JSON** (`exportProgression.js`) produces:
+
+```json
+{
+  "title": "Misty",
+  "beatsPerMeasure": 4,
+  "progression": [
+    { "type": "section", "name": "A" },
+    { "type": "chord", "label": "Ebmaj7", "notes": ["D#2", "G3", "A#3", "D4"], "beats": 4, "repeatStart": true }
+  ]
+}
+```
+
+**Import** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
+
+**Export text** is one-way: `-- A --  |  |: Cmaj7  |  [1.] Am7 :|`.
+
+## Input: keyboard, mouse, and MIDI
+
+`Piano.jsx` holds the selected-note `Set` and reports it upward through `onNotesChange`. Two sources feed it:
+
+- **Mouse and touch** toggle a key.
+- **MIDI** note-on selects a key and **latches**: note-off stops the sound but does not deselect. This is what lets a player use both hands and then commit the chord without holding it. The keys physically down are tracked separately (`heldMidiNotes`).
+
+A MIDI chord is committed by (a) the auto-add option, which fires `onMidiCommit` 350 ms after the last held key is released (the delay lets hands lift slightly apart and lets a quick re-press join the same chord; a new note-on or Clear keyboard cancels it), (b) a sustain-pedal press (CC 64), or (c) the Add chord button. `App.commitMidiChord` adds the chord and then bumps `clearSignal` so the keyboard resets. The Add chord button, by contrast, leaves the selection in place. Mouse clicks never auto-add.
+
+Notes:
+
+- MIDI notes outside the rendered range are ignored (`validIds`) rather than becoming selected notes with no visible key.
+- `useMidiInput` keeps the latest callbacks in a ref so it doesn't unsubscribe and resubscribe on every render.
+- Call `onNotesChange` from an effect, never from inside a `setState` updater, or React warns about updating a component while rendering another.
+- "Clear keyboard" works by the parent incrementing a `clearSignal` prop, which `Piano` handles during render.
+
+## Chord detection
+
+`utils/chordDetection.js` wraps Tonal's `Chord.detect`.
+
+- Notes are sorted low to high first, because Tonal treats the first note as the bass and click order would otherwise change slash-chord names.
+- `assumePerfectFifth: true` lets voicings that omit the 5th (common in jazz) still match.
+- Note ids are sharp-spelled, so they are respelled for the flats preference (`Note.fromMidi` versus `fromMidiSharps`) before detection.
+- `chordLabel` is the single formatter for both the live display and each saved chord's label: empty selection, a single note, unrecognized notes ("No chord match"), or the detected names joined with ` / `.
+
+## Audio
+
+`utils/audio.js` plays through one instrument at a time, chosen by `getInstrument()`:
+
+- A `Tone.Sampler` of Salamander Grand Piano recordings (17 clips, a note every minor third from C2 to C6), bundled in `public/samples/salamander/`. `App` calls `loadPiano()` on mount so the download starts early.
+- A `Tone.PolySynth` as the fallback. It is used until the sampler has loaded, and permanently if loading fails.
+
+`stopNote` releases on both instruments, because a held MIDI note may have started on the synth just before the piano finished loading.
+
+`playProgression` schedules every chord up front (it does not use `Tone.Transport`), placing each at the running total of the beats before it, and sounding it for its own length. The chords come from `unfoldRepeats`, so playback follows repeats and a repeated chord highlights twice. Audio can only start after a user gesture, so each entry point awaits `Tone.start()`.
+
+## Repeats
+
+`utils/repeats.js` turns the flat array into play order. A repeated block starts at the latest `repeatStart`, section marker, or previous `repeatEnd`. Each `:|` jumps back once. On the second pass, chords with `ending: 1` are skipped, so ending 2 plays next. A set of already-taken repeat ends guarantees termination on malformed input. There is no nesting, no repeat count, and no D.S./D.C./Coda.
+
+The lead sheet does not use this function; it draws the marks where they are written.
+
+## The lead sheet
+
+Layout is split into a pure function and a component.
+
+**`utils/leadsheetLayout.js`** (`buildLeadSheetRows`) groups the array into rows. A section always starts a new row and supplies its label. Chords wrap to a new row when the row's beats would exceed a limit. The limit can be a number or a function of the row's measures.
+
+**`LeadSheet.jsx`** measures its width with a `ResizeObserver` and supplies that function (`makeRowCapacity`). A row must give every beat at least 48 px and every chord enough width for its diagram at 80% of natural size (`utils/diagramSize.js`). Capacity is always a whole number of measures, at most four, so rows never break mid-measure.
+
+**Alignment.** Each measure cell uses `flex: <beats> <beats> <beats × 30px>`, growing, shrinking, and starting from a size proportional to its beats. Its width therefore always tracks its beats. The staff SVG below it uses `viewBox="0 0 totalBeats 8"` with `preserveAspectRatio="none"`, so its barlines fall at the same proportional positions. Both layers derive their positions independently from the same beat ratios, so nothing syncs pixel positions by hand. If you change one sizing scheme, change the other.
+
+**Overlays.** Repeat signs and ending brackets are absolutely positioned HTML elements at `beat / totalBeats × 100%`, not SVG, because the stretched SVG would squash the repeat dots. Staff lines use `vector-effect="non-scaling-stroke"` so they stay thin at any stretch.
+
+**Diagrams.** `PianoDiagram` fits itself to its chord: it shows only the octaves the chord uses (at least two) and narrows its keys so it is never wider than 150 px, so a wide two-handed voicing gets a denser diagram rather than overflowing. It is fluid (`max-width: 100%`, percentage key positions) so a narrow cell can shrink it. The sheet shows only the first chord name.
+
+**Clef.** The treble clef is an inline SVG path outlined from the Bravura font (SIL OFL). A font glyph rendered at different sizes on different devices, and in the exported PNG, and sat off the staff.
+
+## Image export and sharing
+
+`utils/sheetImage.js` and the `useSheetImage` hook in `LeadSheet.jsx` produce the PNG.
+
+- The captured element is `.leadsheet-paper`, the inner paper without the card border and shadow.
+- The image is **rendered in the background** (400 ms debounce, re-run when the rows, title, or width change) and the blob is kept ready. `navigator.share()` must be called synchronously inside the tap on iOS Safari, so rendering after the tap can lose the user-gesture permission. The share button uses the ready blob.
+- `renderSheetPng` renders twice and keeps the second result, because html-to-image can return a blank first pass in Safari.
+- Share appears only when `navigator.canShare` accepts a file, which needs a secure context. A failed share falls back to a download; dismissing the share sheet does nothing.
+- **Gotcha:** html-to-image copies computed styles onto HTML elements but not onto shapes inside an SVG, and the standalone image has no stylesheet. An SVG shape styled only by a CSS class is invisible in the PNG. Give SVG shapes their `stroke`, `fill`, and `vector-effect` as attributes.
+
+## Styling
+
+All colors, radii, and shadows are CSS custom properties in `src/index.css`, with a `prefers-color-scheme: dark` override block. There is no manual theme toggle. Shared controls (`.btn`, `.icon-btn`, `.input`, `.panel`) live there too, and grow under `@media (pointer: coarse)` for touch.
+
+The lead sheet is deliberately **always light "paper"**. `.leadsheet-sheet` re-declares the text and key tokens with fixed light values, and the `@media print` block re-declares the light tokens globally so printing from dark mode gives dark-on-white. **When you add a token that the lead sheet or the diagrams use, add it to both the paper scope and the print block.**
+
+Printing hides chrome with the `.no-print` class and calls `window.print()`; there is no PDF library, and the browser produces a vector PDF. Browsers drop background colors when printing unless "Background graphics" is on, which would erase the black and highlighted keys, so the print block sets `print-color-adjust: exact` on the sheet.
+
+## Testing and verification
+
+There is no test runner, and no committed tests. Behavior has been checked with throwaway [Playwright](https://playwright.dev) scripts run against `npm run dev` (for example: chord detection, repeats, layout geometry, MIDI, PNG export). If you write similar scripts:
+
+- Piano keys are buttons with `aria-label="C4"`.
+- Seed a song by setting the `localStorage` keys above in `addInitScript`.
+- Fake MIDI by replacing `navigator.requestMIDIAccess` with an object whose input you call `onmidimessage` on. Note-on is `[0x90, note, velocity]`, note-off is `[0x80, note, 0]`, and the sustain pedal is `[0xb0, 64, 127]` (down) and `[0xb0, 64, 0]` (up).
+- Fake sharing by stubbing `navigator.share` and `navigator.canShare`.
+- To check print output, use `page.pdf({ printBackground: false })`, which reproduces the browser's default print settings.
+
+Not testable in a desktop headless browser: real iPad Safari (the share sheet, html-to-image rendering there) and real audio output.
+
+## Deployment
+
+The app is a static site. `npm run build` produces `dist/`; upload it to any static host. `public/` is copied as-is, including the piano samples and `_headers`, which gives the samples a long cache lifetime on Netlify. Vite's `base` is the default `/`. Under a subpath (for example a GitHub Pages project site), set `base` in `vite.config.js`; the sample URLs already use `import.meta.env.BASE_URL`. The Share button needs https.
+
+## Making common changes
+
+**Add a field to chords.**
+1. Add the field to the entry shape and its validation (`cleanMarks` if it is a mark, otherwise `normalizeEntry` in `storage.js`).
+2. Carry it through `exportProgression.js` and `importProgression.js`.
+3. Copy it in `buildLeadSheetRows`, if the sheet needs it.
+4. Decide whether `duplicateChord` should copy it.
+5. Update this guide.
+
+**Change the octave range.** Edit `START_OCTAVE` and `OCTAVE_COUNT` in `constants.js`. The keyboard and diagrams both read from it. If the range moves outside C2–C6, add samples for it in `public/samples/salamander/` and the list in `audio.js`.
+
+**Add a time signature.** Add its beat count to `TIME_SIGNATURE_OPTIONS`. Time signatures are all N/4, so compound meters like 6/8 would need a change to how beats and barlines are counted.
+
+**Change the piano sound.** Replace the files in `public/samples/salamander/` and update the note map in `audio.js`. Keep the license note and the credit line in the app footer if you keep the Salamander recordings.
+
+**Add UI instructions.** Update the help dialog and the empty state in `Progression.jsx` along with the user guide.
+
+## Known limitations
+
+- Songs live only in the browser they were made in; moving them needs Export and Import JSON.
+- Only first and second endings; no nested repeats, repeat counts, D.S./D.C./Coda.
+- Time signatures are N/4 only.
+- The sheet shows chords only: there is no melody, rhythm marks, or lyrics.
+- Clearing the progression and deleting chords cannot be undone.
+- MIDI input needs Web MIDI, so desktop Chrome or Edge.
+- The Share button is untested on real iPad Safari; the rest of the image pipeline is verified in a desktop browser.

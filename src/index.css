@@ -268,4 +268,12 @@ h2 {
   .no-print {
     display: none !important;
   }
+
+  /* Browsers drop background colors when printing unless "Background graphics" is ticked, which would
+     erase the black and highlighted keys, so the sheet asks for its colors explicitly. */
+  .leadsheet-sheet,
+  .leadsheet-sheet * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
 }

@@ -36,7 +36,10 @@ It's a static site: run `npm run build` and upload `dist/` to any static host (N
 
 React and Vite, [Tone.js](https://tonejs.github.io/) for audio, [Tonal](https://github.com/tonaljs/tonal) for chord detection, and [html-to-image](https://github.com/bubkoo/html-to-image) for the PNG export. The staff and diagrams are hand-drawn SVG and CSS.
 
-For how the code fits together, see [CLAUDE.md](CLAUDE.md).
+## Documentation
+
+- [User guide](docs/USER_GUIDE.md): how to build chords, use a MIDI keyboard, add sections and repeats, and print or share the lead sheet.
+- [Developer guide](docs/DEVELOPER_GUIDE.md): architecture, data model, file formats, and how to change things. [CLAUDE.md](CLAUDE.md) holds the same notes for AI coding assistants.
 
 ## Credits
 
