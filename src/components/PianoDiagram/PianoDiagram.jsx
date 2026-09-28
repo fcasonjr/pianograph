@@ -13,6 +13,7 @@ function octaveOf(noteId) {
 
 // Show only the octaves a chord actually uses (so a two-handed voicing with a low
 // bass note gets a wide diagram), shrinking keys so the diagram never exceeds MAX_DIAGRAM_WIDTH.
+// The width set below is the *natural* size; CSS lets it shrink further (max-width: 100%) in tight spots.
 function fitRange(notes) {
   if (notes.length === 0) {
     return { startOctave: START_OCTAVE, octaveCount: MIN_OCTAVES, keyWidth: MAX_KEY_WIDTH }
@@ -37,8 +38,7 @@ function PianoDiagram({ notes }) {
       className="mini-piano"
       style={{
         '--key-count': whiteKeys.length,
-        '--mini-key-width': `${keyWidth}px`,
-        '--mini-black-key-width': `${keyWidth * 0.62}px`,
+        width: `${keyWidth * whiteKeys.length}px`,
       }}
     >
       {whiteKeys.map((key) => (

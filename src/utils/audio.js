@@ -38,13 +38,16 @@ export async function playProgression(chords, bpm, { onStepChange } = {}) {
   const beatSeconds = 60 / bpm
   const now = Tone.now()
 
-  playable.forEach((chord, i) => {
-    const time = now + i * beatSeconds
-    s.triggerAttackRelease(chord.notes, beatSeconds * 0.9, time)
+  // Each chord sounds for its own length in beats, so two 2-beat chords fill one 4-beat measure.
+  let elapsedBeats = 0
+  playable.forEach((chord) => {
+    const beats = chord.beats ?? 4
+    s.triggerAttackRelease(chord.notes, beats * beatSeconds * 0.9, now + elapsedBeats * beatSeconds)
     if (onStepChange) {
-      setTimeout(() => onStepChange(chord.id), i * beatSeconds * 1000)
+      setTimeout(() => onStepChange(chord.id), elapsedBeats * beatSeconds * 1000)
     }
+    elapsedBeats += beats
   })
 
-  return playable.length * beatSeconds * 1000
+  return elapsedBeats * beatSeconds * 1000
 }

@@ -1,11 +1,10 @@
 .mini-piano {
-  --mini-key-width: 8px;
-  --mini-black-key-width: 5px;
+  --mini-black-key-width: calc(100% / var(--key-count) * 0.62);
 
   position: relative;
   display: flex;
-  flex: 0 0 auto;
-  width: calc(var(--key-count) * var(--mini-key-width));
+  flex: 0 1 auto;
+  max-width: 100%;
   height: 36px;
 }
 
@@ -15,7 +14,8 @@
 }
 
 .mini-key-white {
-  flex: 0 0 var(--mini-key-width);
+  flex: 1 1 0;
+  min-width: 0;
   height: 100%;
   background: var(--key-white);
   border-radius: 0 0 2px 2px;
@@ -29,7 +29,7 @@
   position: absolute;
   top: 0;
   left: calc(
-    (var(--after-index) + 1) * var(--mini-key-width) - (var(--mini-black-key-width) / 2)
+    (var(--after-index) + 1) * 100% / var(--key-count) - var(--mini-black-key-width) / 2
   );
   z-index: 2;
   width: var(--mini-black-key-width);
