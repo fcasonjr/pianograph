@@ -74,6 +74,13 @@ function HelpDialog() {
           Your work is saved automatically, but only in this browser on this device. To back it up or move
           it to another device, use <strong>Export JSON</strong> and then <strong>Import JSON</strong>.
         </p>
+
+        <h3>Importing a MIDI file</h3>
+        <p>
+          <strong>Import MIDI</strong> turns a file of block chords — struck together, not an expressive
+          performance — straight into a progression. Check it over afterward and fix anything that came in
+          wrong.
+        </p>
       </dialog>
     </>
   )

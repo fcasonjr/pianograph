@@ -7,6 +7,7 @@ How the code is put together, and the decisions behind it. For what the app does
 - [The big picture](#the-big-picture)
 - [Data model](#data-model)
 - [Persistence and file formats](#persistence-and-file-formats)
+- [Importing MIDI files](#importing-midi-files)
 - [Input: keyboard, mouse, and MIDI](#input-keyboard-mouse-and-midi)
 - [Chord detection](#chord-detection)
 - [Audio](#audio)
@@ -115,6 +116,18 @@ Everything persists to `localStorage` on every change, with all reads and writes
 **Import** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
 
 **Export text** is one-way: `-- A --  |  |: Cmaj7  |  [1.] Am7 :|`.
+
+## Importing MIDI files
+
+`utils/importMidi.js` (`parseImportedMidi`) is a second trust boundary alongside `importProgression.js`, producing the same `{ title, beatsPerMeasure, progression }` shape so `App.jsx` can hand both to one `applyImportedSong` function. It's built for **quantized block-chord files** — chords struck and released together, the shape a fake-book or chord-chart export produces — not a performance recording; see [Known limitations](#known-limitations) and the comment at the top of the file.
+
+Parsing uses `@tonejs/midi`, which turns a standard MIDI file into tracks of notes with `ticks`/`durationTicks` already resolved against the file's own tempo map. Working in ticks (not seconds) is what makes this immune to files like a real export we tested against, which had over a hundred tiny tempo changes recorded for playback feel — none of that affects the tick-based math at all.
+
+The algorithm, `clusterByOnset`: pool every track's notes together (a chord could in principle be split across tracks), sort by start tick, and group notes into a cluster whenever their start tick falls within `ONSET_TOLERANCE_BEATS` (1/32 beat) of the cluster's first note — this absorbs the small per-note timestamp jitter a real export can have even when musically "simultaneous". Each cluster becomes one chord; **its length is the gap to the next cluster's onset, not its own notes' durations** — deliberately, so a note released a little late (pedal bleed) doesn't shorten the next chord, and the last cluster borrows one measure since nothing bounds it. This also means a genuine rest (silence) in the middle of a file is invisibly absorbed into the chord before it, a known gap for this V1.
+
+`beatsPerMeasureFromMidi` converts the file's time signature into a whole number of quarter-note beats (6/8 becomes 3, for example, since `ticks_per_beat`/`ppq` in a MIDI file is always ticks-per-*quarter-note* regardless of the stated denominator) and falls back to 4/4 if that isn't a whole number in `TIME_SIGNATURE_OPTIONS`. Only the file's first time signature is used, matching the app's one-time-signature-per-song model.
+
+Chord names are recomputed with `chordLabel`, the same function used everywhere else — never trusted from the file, even though some exports (including our test file) carry a chord name as a MIDI `lyrics` meta event at each chord's start. That embedded text is unused; it can disagree with Pianograph's own naming for an inversion or a voicing missing its fifth, which is expected, not a bug.
 
 ## Input: keyboard, mouse, and MIDI
 
@@ -234,3 +247,4 @@ The app is a static site. `npm run build` produces `dist/`; upload it to any sta
 - Clearing the progression and deleting chords cannot be undone.
 - MIDI input needs Web MIDI, so desktop Chrome or Edge.
 - The Share button is untested on real iPad Safari; the rest of the image pipeline is verified in a desktop browser.
+- MIDI import assumes quantized block chords; an expressive performance recording (arpeggios, a melody layered over the harmony, pedal overlap) will cluster into the wrong chords. There's no rest/silence detection, so a gap in the file is absorbed into the chord before it.

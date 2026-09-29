@@ -16,6 +16,7 @@ import {
   saveTitle,
 } from './utils/storage'
 import { parseImportedSong } from './utils/importProgression'
+import { parseImportedMidi } from './utils/importMidi'
 import { TIME_SIGNATURE_OPTIONS } from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
@@ -34,6 +35,7 @@ function App() {
   const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
+  const midiInputRef = useRef(null)
   const [clearSignal, setClearSignal] = useState(0)
 
   useEffect(() => {
@@ -143,23 +145,37 @@ function App() {
     })
   }
 
+  async function applyImportedSong(song) {
+    if (
+      progression.length > 0 &&
+      !window.confirm('Replace your current progression and title with the imported file?')
+    ) {
+      return
+    }
+    setProgression(song.progression)
+    setTitle(song.title)
+    setBeatsPerMeasure(song.beatsPerMeasure)
+    saveBeatsPerMeasure(song.beatsPerMeasure)
+    setImportError('')
+  }
+
   async function handleImportFile(event) {
     const file = event.target.files?.[0]
     event.target.value = ''
     if (!file) return
     try {
-      const song = parseImportedSong(await file.text(), accidentals)
-      if (
-        progression.length > 0 &&
-        !window.confirm('Replace your current progression and title with the imported file?')
-      ) {
-        return
-      }
-      setProgression(song.progression)
-      setTitle(song.title)
-      setBeatsPerMeasure(song.beatsPerMeasure)
-      saveBeatsPerMeasure(song.beatsPerMeasure)
-      setImportError('')
+      await applyImportedSong(parseImportedSong(await file.text(), accidentals))
+    } catch (error) {
+      setImportError(`Couldn't import: ${error.message}`)
+    }
+  }
+
+  async function handleImportMidiFile(event) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    try {
+      await applyImportedSong(await parseImportedMidi(file, accidentals))
     } catch (error) {
       setImportError(`Couldn't import: ${error.message}`)
     }
@@ -332,6 +348,20 @@ function App() {
                   accept=".json,application/json"
                   hidden
                   onChange={handleImportFile}
+                />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
+                  onClick={() => midiInputRef.current?.click()}
+                >
+                  Import MIDI
+                </button>
+                <input
+                  ref={midiInputRef}
+                  type="file"
+                  accept=".mid,.midi,audio/midi,audio/x-midi"
+                  hidden
+                  onChange={handleImportMidiFile}
                 />
                 <button
                   type="button"

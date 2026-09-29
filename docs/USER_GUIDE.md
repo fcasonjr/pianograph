@@ -13,6 +13,7 @@ Pianograph turns chords you play into a lead sheet you can print or share. You b
 - [The lead sheet](#the-lead-sheet)
 - [Printing, PDF, and sharing](#printing-pdf-and-sharing)
 - [Saving, backing up, and moving songs](#saving-backing-up-and-moving-songs)
+- [Importing a MIDI file](#importing-a-midi-file)
 - [Troubleshooting](#troubleshooting)
 
 ## Quick start
@@ -152,6 +153,19 @@ To back up or move a song, use the buttons in the Progression panel:
 - **Export text** downloads a plain-text version of the chord chart, such as `|: Cmaj7  |  Am7 :|`. It can't be imported again.
 
 To move a song to your iPad: on the computer, choose Export JSON, send the file to the iPad (AirDrop or email works), then on the iPad open Pianograph and use Import JSON.
+
+## Importing a MIDI file
+
+**Import MIDI**, next to Import JSON, reads a `.mid` file and turns it straight into a progression, so you don't have to click in every chord by hand. It works well for a **file of block chords**: a chart, fake-book export, or backing track where the chords are struck together and held for a clean length — the kind of file you'd get from chord-chart software, not a recording of someone playing expressively.
+
+- Each group of notes that starts together becomes one chord card, with its length taken from the file's own timing.
+- The song's time signature comes from the file; if it isn't a plain N/4 meter, it falls back to 4/4.
+- Chord names are worked out by Pianograph itself from the notes, the same way a chord you click in is named — they may not always match a chord name embedded in the file, especially for an inversion or a voicing missing its fifth.
+- Sections and repeat marks aren't detected. Add those afterward the normal way.
+
+A file recorded from a live performance — arpeggiated chords, a melody note mixed in with the harmony, notes that overlap because of the sustain pedal — will import messily, since the app can't tell melody from harmony or separate a smear of overlapping notes into clean chords. Check the result over card by card, and use the ← → ⧉ × controls to fix anything that came in wrong, the same as with any other chord.
+
+As with Import JSON, importing asks before replacing a progression you've already started.
 
 ## Troubleshooting
 

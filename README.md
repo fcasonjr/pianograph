@@ -10,6 +10,7 @@ Build piano chords by clicking keys (or playing a MIDI keyboard), arrange them i
 - **Progression.** Reorder, copy, and remove chords; set how many beats each lasts (several short chords can share a measure); choose a 2/4–6/4 time signature; add section labels (A, B, Bridge…) and repeat signs with first and second endings.
 - **Lead sheet.** Prints to PDF from the browser, downloads as a PNG, or uses the native share sheet on iPad and phone.
 - **Save and move songs.** Work is saved automatically in the browser. Export and import JSON to back up or move a song to another device, or export it as plain text.
+- **Import a MIDI file.** Bring in a file of block chords — a chord-chart or fake-book export — and it's turned straight into a progression, ready to clean up and use.
 
 ## Getting started
 
