@@ -1,0 +1,6 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The long-cache header for the bundled piano samples already lives in public/_headers,
+# which Netlify copies into dist/ as part of the build.

@@ -32,6 +32,8 @@ Other commands: `npm run build` (production build to `dist/`), `npm run preview`
 
 It's a static site: run `npm run build` and upload `dist/` to any static host (Netlify, Cloudflare Pages, GitHub Pages, and so on). The piano samples are bundled in `public/samples/`, so nothing is fetched from a third party. If you host under a subpath, set Vite's `base` option to match.
 
+`netlify.toml` has the build settings for Netlify's "Import from Git": build command `npm run build`, publish directory `dist`. Push this repo to GitHub, then in Netlify choose **Add new site → Import from Git** and pick it; every push after that redeploys automatically.
+
 ## Built with
 
 React and Vite, [Tone.js](https://tonejs.github.io/) for audio, [Tonal](https://github.com/tonaljs/tonal) for chord detection, and [html-to-image](https://github.com/bubkoo/html-to-image) for the PNG export. The staff and diagrams are hand-drawn SVG and CSS.
