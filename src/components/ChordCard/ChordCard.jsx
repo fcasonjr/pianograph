@@ -24,9 +24,11 @@ function ChordCard({
   onPlay,
   playDisabled,
   isPlaying,
+  onEdit,
+  isEditing,
 }) {
   return (
-    <div className={`chord-card ${isPlaying ? 'playing' : ''}`}>
+    <div className={`chord-card ${isPlaying ? 'playing' : ''} ${isEditing ? 'editing' : ''}`}>
       <button
         type="button"
         className="icon-btn chord-card-section"
@@ -37,8 +39,16 @@ function ChordCard({
       >
         §
       </button>
-      <div className="chord-card-name">{label}</div>
-      <PianoDiagram notes={notes} />
+      <button
+        type="button"
+        className="chord-card-edit"
+        onClick={onEdit}
+        title="Edit this chord's notes on the keyboard"
+        aria-label={`Edit ${label}`}
+      >
+        <span className="chord-card-name">{label}</span>
+        <PianoDiagram notes={notes} />
+      </button>
       <div className="beat-presets" role="group" aria-label={`Length of ${label}`}>
         {beatPresets(beatsPerMeasure).map((preset) => (
           <button

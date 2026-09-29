@@ -59,6 +59,12 @@ function HelpDialog() {
           Use ← → to reorder, ⧉ to copy a chord, and × to remove it. The number chips set how many beats a
           chord lasts, so two short chords can share one measure. The time signature is next to Tempo.
         </p>
+        <p>
+          Click a chord's name or diagram on its card to <strong>edit it</strong> — its notes load onto
+          the keyboard, with the card outlined to show which one. Adjust the notes and press{' '}
+          <strong>Save changes</strong> to update that same chord in place, or <strong>Cancel</strong> to
+          back out. Its position, length, and repeat marks stay as they were.
+        </p>
 
         <h3>Sections and repeats</h3>
         <p>

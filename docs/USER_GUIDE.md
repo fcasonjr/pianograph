@@ -77,6 +77,8 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 | Number buttons and **− / +** | Set how many beats the chord lasts (see below). |
 | **\|:  :\|  1.  2.** | Repeat and ending marks (see [Repeats and endings](#repeats-and-endings)). |
 
+**Editing a chord you've already added.** Click the chord's name or its diagram on the card, and its notes load onto the keyboard above — the card gets a dashed outline so you can see which one you're editing. Add a bass note, drop the 5th, search a different voicing, anything you'd normally do while building a chord, then press **Save changes** to write it back into that same card. Its position, length, and any repeat marks stay exactly as they were — only the notes and name change. **Cancel** backs out without saving. Editing one card while already editing another just switches to the new one; nothing is lost, since nothing is saved until you press Save changes.
+
 **Clear** at the top of the Progression panel removes every chord and section, and clears the song title too, so you're starting a new song rather than just emptying the current one. It doesn't ask for confirmation and can't be undone, so export first if you might want the song back.
 
 ## Measures and time signatures

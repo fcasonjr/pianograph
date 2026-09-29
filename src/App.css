@@ -177,6 +177,16 @@
   color: var(--danger);
 }
 
+.editing-banner {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-radius: var(--radius-sm);
+}
+
 .app-credit {
   margin: 24px 0 0;
   font-size: 12px;

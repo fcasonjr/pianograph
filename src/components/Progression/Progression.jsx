@@ -14,6 +14,8 @@ function Progression({
   onPlayChord,
   playDisabled,
   playingChordId,
+  onEditChord,
+  editingChordId,
 }) {
   if (chords.length === 0) {
     return (
@@ -73,6 +75,8 @@ function Progression({
             onPlay={() => onPlayChord(entry.notes)}
             playDisabled={playDisabled}
             isPlaying={entry.id === playingChordId}
+            onEdit={() => onEditChord(entry.id)}
+            isEditing={entry.id === editingChordId}
           />
         )
       })}

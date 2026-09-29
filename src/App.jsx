@@ -41,8 +41,10 @@ function App() {
   const [chordSearchQuery, setChordSearchQuery] = useState('')
   const [chordSearchMerge, setChordSearchMerge] = useState(false)
   const [chordSearchError, setChordSearchError] = useState('')
-  const [applyNotes, setApplyNotes] = useState(null)
+  const [applyPayload, setApplyPayload] = useState({ notes: null, mode: 'replace' })
   const [applySignal, setApplySignal] = useState(0)
+  const [editingChordId, setEditingChordId] = useState(null)
+  const composePanelRef = useRef(null)
 
   useEffect(() => {
     // Start fetching the piano samples now so they're ready by the first note.
@@ -98,6 +100,35 @@ function App() {
     ])
   }
 
+  // Shared by the Add chord/Save changes button and the MIDI hands-free path: saves the keyboard's
+  // current notes either as a brand new chord, or back into the chord being edited (keeping its beats
+  // and repeat marks — only its notes and label change).
+  function commitChord() {
+    if (selectedNotes.length === 0) return
+    if (editingChordId) {
+      updateChord(editingChordId, { notes: selectedNotes, label: currentLabel })
+      setEditingChordId(null)
+    } else {
+      addChord()
+    }
+  }
+
+  // Loads a saved chord's notes onto the keyboard to adjust by hand; Save changes then writes them
+  // back into that same card instead of adding a new one.
+  function startEditChord(id) {
+    const entry = progression.find((chord) => chord.id === id && chord.type === 'chord')
+    if (!entry) return
+    setApplyPayload({ notes: entry.notes, mode: 'replace' })
+    setApplySignal((n) => n + 1)
+    setEditingChordId(id)
+    setChordSearchError('')
+    composePanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  function cancelEditChord() {
+    setEditingChordId(null)
+  }
+
   function changeMidiAutoAdd(next) {
     setMidiAutoAdd(next)
     savePreferences({ accidentals, midiAutoAdd: next })
@@ -107,7 +138,7 @@ function App() {
   // keyboard so the next chord starts fresh. The Add chord button leaves the selection alone.
   function commitMidiChord() {
     if (selectedNotes.length === 0) return
-    addChord()
+    commitChord()
     setClearSignal((n) => n + 1)
   }
 
@@ -126,6 +157,7 @@ function App() {
 
   function removeChord(id) {
     setProgression((prev) => prev.filter((chord) => chord.id !== id))
+    if (id === editingChordId) setEditingChordId(null)
   }
 
   function moveChord(id, direction) {
@@ -163,6 +195,7 @@ function App() {
     setBeatsPerMeasure(song.beatsPerMeasure)
     saveBeatsPerMeasure(song.beatsPerMeasure)
     setImportError('')
+    setEditingChordId(null)
   }
 
   async function handleImportFile(event) {
@@ -217,6 +250,7 @@ function App() {
   function clearProgression() {
     setProgression([])
     setTitle('')
+    setEditingChordId(null)
   }
 
   function handleChordSearch(event) {
@@ -225,7 +259,7 @@ function App() {
     if (!query) return
     try {
       const notes = searchChord(query)
-      setApplyNotes(notes)
+      setApplyPayload({ notes, mode: chordSearchMerge ? 'merge' : 'replace' })
       setApplySignal((n) => n + 1)
       setChordSearchError('')
       if (!isPlaying) playChord(notes)
@@ -306,7 +340,12 @@ function App() {
         <LeadSheet progression={progression} title={title} beatsPerMeasure={beatsPerMeasure} />
       ) : (
         <>
-          <section className="panel compose-panel">
+          <section className="panel compose-panel" ref={composePanelRef}>
+            {editingChordId && (
+              <p className="editing-banner">
+                Editing a saved chord — adjust the notes, then Save changes.
+              </p>
+            )}
             <div className="panel-head">
               <p className={`chord-display ${currentLabel ? '' : 'is-empty'}`}>{chordDisplay}</p>
               <div className="compose-actions">
@@ -318,13 +357,18 @@ function App() {
                 >
                   Clear keyboard
                 </button>
+                {editingChordId && (
+                  <button type="button" className="btn btn-ghost" onClick={cancelEditChord}>
+                    Cancel
+                  </button>
+                )}
                 <button
                   type="button"
                   className="btn btn-primary add-chord-button"
-                  onClick={addChord}
+                  onClick={commitChord}
                   disabled={selectedNotes.length === 0}
                 >
-                  Add chord
+                  {editingChordId ? 'Save changes' : 'Add chord'}
                 </button>
               </div>
             </div>
@@ -357,8 +401,8 @@ function App() {
               onNotesChange={setSelectedNotes}
               clearSignal={clearSignal}
               applySignal={applySignal}
-              applyNotes={applyNotes}
-              applyMode={chordSearchMerge ? 'merge' : 'replace'}
+              applyNotes={applyPayload.notes}
+              applyMode={applyPayload.mode}
               midiAutoAdd={midiAutoAdd}
               onMidiAutoAddChange={changeMidiAutoAdd}
               onMidiCommit={commitMidiChord}
@@ -508,6 +552,8 @@ function App() {
               onPlayChord={handlePlayChord}
               playDisabled={isPlaying}
               playingChordId={playingChordId}
+              onEditChord={startEditChord}
+              editingChordId={editingChordId}
             />
           </section>
         </>
