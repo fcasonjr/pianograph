@@ -4,7 +4,14 @@ import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import HelpDialog from './components/HelpDialog/HelpDialog'
 import { chordLabel } from './utils/chordDetection'
-import { loadPiano, playChord, playProgression } from './utils/audio'
+import {
+  loadPiano,
+  pauseProgression,
+  playChord,
+  playProgression,
+  resumeProgression,
+  stopProgression,
+} from './utils/audio'
 import {
   loadBeatsPerMeasure,
   loadPreferences,
@@ -26,7 +33,7 @@ function App() {
   const [selectedNotes, setSelectedNotes] = useState([])
   const [progression, setProgression] = useState(() => loadProgression())
   const [tempo, setTempo] = useState(120)
-  const [isPlaying, setIsPlaying] = useState(false)
+  const [playbackStatus, setPlaybackStatus] = useState('stopped') // 'stopped' | 'playing' | 'paused'
   const [playingChordId, setPlayingChordId] = useState(null)
   const [sectionName, setSectionName] = useState('')
   const [view, setView] = useState('builder')
@@ -270,27 +277,45 @@ function App() {
       setApplyPayload({ notes, mode: chordSearchMerge ? 'merge' : 'replace' })
       setApplySignal((n) => n + 1)
       setChordSearchError('')
-      if (!isPlaying) playChord(notes)
+      if (playbackStatus === 'stopped') playChord(notes)
     } catch (error) {
       setChordSearchError(error.message)
     }
   }
 
   function handlePlayChord(notes) {
-    if (isPlaying) return
+    if (playbackStatus !== 'stopped') return
     playChord(notes)
   }
 
   async function handlePlayProgression() {
-    if (isPlaying || progression.length === 0) return
-    setIsPlaying(true)
-    const totalMs = await playProgression(progression, tempo, {
+    if (playbackStatus !== 'stopped' || progression.length === 0) return
+    setPlaybackStatus('playing')
+    // onComplete fires from the audio transport's own clock, not a wall-clock setTimeout, so it still
+    // lands at the right moment even if playback was paused for a while in between.
+    await playProgression(progression, tempo, {
       onStepChange: setPlayingChordId,
+      onComplete: () => {
+        setPlaybackStatus('stopped')
+        setPlayingChordId(null)
+      },
     })
-    setTimeout(() => {
-      setIsPlaying(false)
-      setPlayingChordId(null)
-    }, totalMs)
+  }
+
+  function handlePauseProgression() {
+    pauseProgression()
+    setPlaybackStatus('paused')
+  }
+
+  function handleResumeProgression() {
+    resumeProgression()
+    setPlaybackStatus('playing')
+  }
+
+  function handleStopProgression() {
+    stopProgression()
+    setPlaybackStatus('stopped')
+    setPlayingChordId(null)
   }
 
   return (
@@ -492,14 +517,36 @@ function App() {
 
             <div className="toolbar">
               <div className="progression-controls">
-                <button
-                  type="button"
-                  className="btn btn-primary play-progression-button"
-                  onClick={handlePlayProgression}
-                  disabled={isPlaying || progression.length === 0}
-                >
-                  ▶ Play progression
-                </button>
+                {playbackStatus === 'stopped' && (
+                  <button
+                    type="button"
+                    className="btn btn-primary play-progression-button"
+                    onClick={handlePlayProgression}
+                    disabled={progression.length === 0}
+                  >
+                    ▶ Play progression
+                  </button>
+                )}
+                {playbackStatus === 'playing' && (
+                  <>
+                    <button type="button" className="btn btn-primary" onClick={handlePauseProgression}>
+                      ⏸ Pause
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={handleStopProgression}>
+                      ■ Stop
+                    </button>
+                  </>
+                )}
+                {playbackStatus === 'paused' && (
+                  <>
+                    <button type="button" className="btn btn-primary" onClick={handleResumeProgression}>
+                      ▶ Resume
+                    </button>
+                    <button type="button" className="btn btn-secondary" onClick={handleStopProgression}>
+                      ■ Stop
+                    </button>
+                  </>
+                )}
                 <label className="tempo-control">
                   Tempo
                   <input
@@ -558,7 +605,7 @@ function App() {
               onRenameSection={renameSection}
               beatsPerMeasure={beatsPerMeasure}
               onPlayChord={handlePlayChord}
-              playDisabled={isPlaying}
+              playDisabled={playbackStatus !== 'stopped'}
               playingChordId={playingChordId}
               onEditChord={startEditChord}
               editingChordId={editingChordId}

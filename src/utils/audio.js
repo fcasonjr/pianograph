@@ -64,7 +64,11 @@ export function stopNote(note) {
   if (pianoStatus === 'ready') piano.triggerRelease(note)
 }
 
-export async function playProgression(chords, bpm, { onStepChange } = {}) {
+// playProgression uses Tone.Transport (rather than raw Tone.now()-relative timestamps, the earlier
+// approach) specifically so playback can be paused and resumed from exactly where it left off:
+// Transport has its own pausable clock, and events scheduled against it stay correctly positioned
+// relative to that clock regardless of how long a pause lasts, which real wall-clock setTimeouts can't do.
+export async function playProgression(chords, bpm, { onStepChange, onComplete } = {}) {
   // Repeats and endings are unfolded into play order (a repeated chord is scheduled, and highlighted, twice).
   const playable = unfoldRepeats(chords).filter((chord) => chord.notes?.length > 0)
   if (playable.length === 0) return 0
@@ -72,18 +76,54 @@ export async function playProgression(chords, bpm, { onStepChange } = {}) {
   await Tone.start()
   const instrument = getInstrument()
   const beatSeconds = 60 / bpm
-  const now = Tone.now()
+
+  // Clears anything left scheduled from a run that was stopped rather than played to completion.
+  Tone.Transport.cancel()
+  Tone.Transport.stop()
 
   // Each chord sounds for its own length in beats, so two 2-beat chords fill one 4-beat measure.
   let elapsedBeats = 0
   playable.forEach((chord) => {
     const beats = chord.beats ?? 4
-    instrument.triggerAttackRelease(chord.notes, beats * beatSeconds * 0.9, now + elapsedBeats * beatSeconds)
+    const offset = elapsedBeats * beatSeconds
+    Tone.Transport.schedule((time) => {
+      instrument.triggerAttackRelease(chord.notes, beats * beatSeconds * 0.9, time)
+    }, offset)
     if (onStepChange) {
-      setTimeout(() => onStepChange(chord.id), elapsedBeats * beatSeconds * 1000)
+      // Tone.Draw syncs a UI update to the right visual frame near the audio event's own time,
+      // rather than firing the React state update straight from the audio-scheduling callback.
+      Tone.Transport.schedule((time) => {
+        Tone.Draw.schedule(() => onStepChange(chord.id), time)
+      }, offset)
     }
     elapsedBeats += beats
   })
 
-  return elapsedBeats * beatSeconds * 1000
+  const totalSeconds = elapsedBeats * beatSeconds
+  if (onComplete) {
+    Tone.Transport.schedule((time) => {
+      Tone.Draw.schedule(onComplete, time)
+    }, totalSeconds)
+  }
+
+  Tone.Transport.start()
+  return totalSeconds * 1000
+}
+
+export function pauseProgression() {
+  Tone.Transport.pause()
+}
+
+export function resumeProgression() {
+  Tone.Transport.start()
+}
+
+// Ends playback outright (as opposed to pausing): resets the transport back to the start and cancels
+// every remaining scheduled chord, then immediately silences whatever's still ringing — pausing alone
+// stops new notes from firing but lets an already-triggered chord ring out its own release tail.
+export function stopProgression() {
+  Tone.Transport.stop()
+  Tone.Transport.cancel()
+  synth?.releaseAll()
+  if (pianoStatus === 'ready') piano.releaseAll()
 }

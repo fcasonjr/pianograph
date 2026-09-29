@@ -120,6 +120,7 @@ Things to know:
 ## Playing it back
 
 - **▶ Play progression** plays the whole song from the top. The card being played is highlighted.
+- While it's playing, the button becomes **⏸ Pause** and **■ Stop**. Pause holds playback exactly where it is — press **▶ Resume** to continue from that same spot, not from the beginning. Stop ends playback and rewinds to the start, ready for a fresh **▶ Play progression** next time.
 - **Tempo** sets the speed in beats per minute (40 to 300). Each chord sounds for as many beats as you gave it.
 - Playback follows your repeats and endings, so a repeated chord plays, and lights up, twice.
 - The sound is a real piano recording. While the recordings load at startup, or if they can't load, you hear a simpler synth instead.

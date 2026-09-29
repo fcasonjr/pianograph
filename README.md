@@ -5,7 +5,7 @@ Build piano chords by clicking keys (or playing a MIDI keyboard), arrange them i
 ## Features
 
 - **Chord builder.** Click keys across four octaves (C2–B5), so two-handed voicings with a low bass note fit. The chord name is detected as you play (`Cmaj7`, `Dm7 / F6/D`, slash chords and jazz voicings included), with a Sharps/Flats setting for spelling. Or type a chord symbol into the search box to select its notes for you, then adjust by hand from there.
-- **Sound.** Real piano samples for previewing notes, chords, and the whole progression at a tempo you choose. If the samples can't load, it falls back to a synth.
+- **Sound.** Real piano samples for previewing notes, chords, and the whole progression at a tempo you choose, with Pause/Resume and Stop for playback. If the samples can't load, it falls back to a synth.
 - **MIDI keyboard input** (Chrome or Edge on a computer). Notes stay selected after you let go, so both hands can play a chord. The chord is added automatically a moment after you lift your hands, or when you press a sustain pedal.
 - **Progression.** Reorder, copy, and remove chords; edit an already-added chord's notes right on its card; set how many beats each lasts (several short chords can share a measure); choose a 2/4–6/4 time signature; add section labels (A, B, Bridge…) and repeat signs with first and second endings.
 - **Lead sheet.** Prints to PDF from the browser, downloads as a PNG, or uses the native share sheet on iPad and phone. An optional handwritten font for the chord names gives it more of a classic hand-copied fake-book feel.
@@ -41,7 +41,7 @@ React and Vite, [Tone.js](https://tonejs.github.io/) for audio, [Tonal](https://
 
 ## Documentation
 
-- [User guide](docs/USER_GUIDE.md): how to build chords, use a MIDI keyboard, add sections and repeats, and print or share the lead sheet.
+- [User guide](docs/USER_GUIDE.md): how to build chords, use a MIDI keyboard, add sections and repeats, and print or share the lead sheet. Also available as a [designed PDF](docs/Pianograph-User-Guide.pdf) with screenshots.
 - [Developer guide](docs/DEVELOPER_GUIDE.md): architecture, data model, file formats, and how to change things. [CLAUDE.md](CLAUDE.md) holds the same notes for AI coding assistants.
 
 ## Credits
