@@ -98,13 +98,24 @@ export function saveBeatsPerMeasure(beatsPerMeasure) {
 
 const PLAY_ORDER_KEY = 'pianograph:playOrder'
 
-// A song form: an ordered list of section ids to play (e.g. A, B1, A, B2, A). Ids that no longer match
-// an existing section (renamed away, removed, or a stale save from a different song) are the caller's
-// responsibility to prune against the current progression — this just returns what was last saved.
+// A song form: an ordered list of { sectionId, ending } steps to play (e.g. A's 1st ending, B, A's 2nd
+// ending, B). Ids that no longer match an existing section (renamed away, removed, or a stale save from
+// a different song) are the caller's responsibility to prune against the current progression — this
+// just returns what was last saved. Normalizes a plain section-id string (the shape this shipped with
+// before per-step endings existed) into a step with `ending: null`.
 export function loadFormOrder() {
   try {
     const parsed = JSON.parse(localStorage.getItem(PLAY_ORDER_KEY) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : []
+    if (!Array.isArray(parsed)) return []
+    return parsed
+      .map((step) => {
+        if (typeof step === 'string') return { sectionId: step, ending: null }
+        if (step && typeof step.sectionId === 'string') {
+          return { sectionId: step.sectionId, ending: step.ending === 1 || step.ending === 2 ? step.ending : null }
+        }
+        return null
+      })
+      .filter(Boolean)
   } catch {
     return []
   }

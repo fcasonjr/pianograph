@@ -46,6 +46,36 @@
   color: var(--surface);
 }
 
+/* Groups a section's "as written" chip with its 1st/2nd-ending refinements into one joined pill, so
+   they read as three options for the same section rather than three unrelated chips. */
+.song-form-chip-group {
+  display: inline-flex;
+  border: 1px solid var(--accent);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.song-form-chip-group .song-form-chip {
+  border: none;
+  border-radius: 0;
+  border-right: 1px solid var(--accent);
+}
+
+.song-form-chip-group .song-form-chip:last-child {
+  border-right: none;
+}
+
+.song-form-chip-ending {
+  background: transparent;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.song-form-chip-ending:hover {
+  background: var(--accent);
+  color: var(--surface);
+}
+
 .song-form-order {
   display: flex;
   flex-wrap: wrap;

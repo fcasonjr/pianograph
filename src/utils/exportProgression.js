@@ -14,12 +14,19 @@ export function exportProgressionAsJson(progression, title = '', beatsPerMeasure
           ...cleanMarks(entry),
         },
   )
-  // The file never stores ids (they're regenerated on import), so a song form is saved as each step's
-  // position among the sections in document order (0 = the first section, 1 = the second, ...) rather
-  // than the id itself — importProgression.js maps these back to real ids once the new ones exist.
+  // The file never stores ids (they're regenerated on import), so a song-form step is saved as its
+  // section's position among the sections in document order (0 = the first section, 1 = the second,
+  // ...) rather than the id itself, plus which ending it plays, if any — importProgression.js maps the
+  // position back to a real id once the new ones exist.
   const sectionIndex = new Map(listSections(progression).map((section, i) => [section.id, i]))
-  const formIndices = playOrder.map((id) => sectionIndex.get(id)).filter((i) => i !== undefined)
-  const data = { title: title.trim(), beatsPerMeasure, playOrder: formIndices, progression: entries }
+  const formSteps = playOrder
+    .map((step) => {
+      const section = sectionIndex.get(step.sectionId)
+      if (section === undefined) return null
+      return step.ending ? { section, ending: step.ending } : { section }
+    })
+    .filter(Boolean)
+  const data = { title: title.trim(), beatsPerMeasure, playOrder: formSteps, progression: entries }
   downloadFile(`${fileBase(title)}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 

@@ -75,7 +75,7 @@ function App() {
     setPrunedForKey(sectionIdsKey)
     const validIds = new Set(sectionIdsKey ? sectionIdsKey.split('\u0000') : [])
     setFormOrder((prev) => {
-      const next = prev.filter((id) => validIds.has(id))
+      const next = prev.filter((step) => validIds.has(step.sectionId))
       return next.length === prev.length ? prev : next
     })
   }
@@ -348,8 +348,8 @@ function App() {
     await runPlayback(buildPlayOrder(progression, formOrder))
   }
 
-  function addFormStep(sectionId) {
-    setFormOrder((prev) => [...prev, sectionId])
+  function addFormStep(sectionId, ending = null) {
+    setFormOrder((prev) => [...prev, { sectionId, ending }])
   }
 
   function removeFormStep(index) {

@@ -82,7 +82,9 @@ function HelpDialog() {
         <p>
           With two or more sections, a <strong>Song form</strong> box lets you play them in any order —
           A, B1, A, B2, A — without duplicating chords. Tap a section to add it to the order (tap again
-          to repeat it), then <strong>▶ Play form</strong>. The order is saved with the song.
+          to repeat it), then <strong>▶ Play form</strong>. A section with 1st/2nd endings shows three
+          taps instead of one — as written, 1st, or 2nd — so you can play the same section twice with a
+          different ending each time, e.g. A · 1st → B → A · 2nd → B. The order is saved with the song.
         </p>
 
         <h3>Print or share the lead sheet</h3>

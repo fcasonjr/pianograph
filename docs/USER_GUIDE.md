@@ -107,8 +107,10 @@ Once a song has two or more sections, a **Song form** box appears above the prog
 
 - Tap a section's chip (**+ A**, **+ B1**, ...) to add it to the play order. Tap the same section again to add it a second time — the order shown below the chips grows one step at a time: `A → B1 → A → B2 → A`.
 - Each step has its own **×** to remove just that step.
-- **▶ Play form** plays exactly that sequence — each section with its own tempo, repeats, and endings intact, as if you'd written it out in full.
+- **▶ Play form** plays exactly that sequence — each step with its own tempo intact, as if you'd written it out in full.
 - **Clear form** empties the order so you can build a different one.
+
+**If a section has 1st and 2nd endings on it,** its chip becomes three joined options instead of one: **+ A** (as written — plays through with its own repeat, exactly like a normal chord chart), **1st**, and **2nd**. Use **1st**/**2nd** when the *same* section is meant to come back later in the form ending a different way, without leaving the section itself — for example a bridge that returns twice with a different final chord each time: build the order as **A · 1st → B → A · 2nd → B**, and each visit to A plays only its own ending, no repeat or skip needed. (This is different from **B1**/**B2** — use separate sections like that when the two versions are different chords throughout, not just a different ending.)
 
 Your song form is saved with the song, including in **Save as file**, so reopening a song later doesn't mean rebuilding the order from scratch. If you remove a section that's part of a saved form, that step is quietly dropped from the order rather than left pointing at nothing.
 

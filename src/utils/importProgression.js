@@ -69,13 +69,20 @@ export function parseImportedSong(text, accidentals) {
     : DEFAULT_BEATS_PER_MEASURE
   const progression = entries.map((entry, i) => parseEntry(entry, i, accidentals, beatsPerMeasure))
 
-  // A song form is stored as each step's position among the sections (see exportProgression.js), since
-  // ids are regenerated on every import; map those positions to the freshly generated section ids.
+  // A song-form step is stored as its section's position among the sections (see
+  // exportProgression.js), since ids are regenerated on every import; map each position back to the
+  // freshly generated section id. Accepts both the current step shape ({ section, ending? }) and the
+  // plain-number shape an earlier version of this feature exported (a bare index, no ending).
   const sections = listSections(progression)
+  const validEnding = (value) => (value === 1 || value === 2 ? value : null)
   const rawPlayOrder = !Array.isArray(data) && Array.isArray(data.playOrder) ? data.playOrder : []
   const playOrder = rawPlayOrder
-    .filter((i) => Number.isInteger(i) && i >= 0 && i < sections.length)
-    .map((i) => sections[i].id)
+    .map((step) => {
+      const index = typeof step === 'number' ? step : step?.section
+      if (!Number.isInteger(index) || index < 0 || index >= sections.length) return null
+      return { sectionId: sections[index].id, ending: typeof step === 'number' ? null : validEnding(step?.ending) }
+    })
+    .filter(Boolean)
 
   return { title, beatsPerMeasure, playOrder, progression }
 }
