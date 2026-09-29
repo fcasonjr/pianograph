@@ -5,10 +5,13 @@ import { Chord, Note } from 'tonal'
 const DEFAULT_START_OCTAVE = 3
 
 // Full words for common qualities, so typing them out ("Eb Major") works alongside the short chord-
-// symbol form ("Ebmaj") that Tonal expects. Order matters: "dominant" is dropped in front of a number
-// (the number alone already implies dominant, e.g. "9" is a dominant 9th — "dom9" isn't recognized) and
-// otherwise mapped to "dom" ("dominant" alone means a dominant 7th).
+// symbol form ("Ebmaj") that Tonal expects. Order matters: "half diminished" must be matched (and its
+// own redundant trailing "7"/"7th" absorbed — the m7b5 it maps to already has a 7th) before the plain
+// "diminished" rule below would otherwise turn it into a nonsensical "halfdim"; "dominant" is dropped in
+// front of a number (the number alone already implies dominant, e.g. "9" is a dominant 9th — "dom9"
+// isn't recognized) and otherwise mapped to "dom" ("dominant" alone means a dominant 7th).
 const WORD_ALIASES = [
+  [/\bhalf[\s-]?dim(?:inished)?\b(\s*7(?:th)?\b)?/gi, 'm7b5'],
   [/\bdominant\b\s*(?=\d)/gi, ''],
   [/\bmajor\b/gi, 'maj'],
   [/\bminor\b/gi, 'min'],
