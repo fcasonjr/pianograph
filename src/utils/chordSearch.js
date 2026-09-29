@@ -20,12 +20,14 @@ const WORD_ALIASES = [
 
 // Tolerates natural phrasing ("Eb Major 7th chord") in addition to plain chord-symbol notation
 // ("Ebmaj7"): spells out common quality words, drops a trailing "chord", and strips English ordinal
-// suffixes after a number ("7th" -> "7"). Chord symbols never contain spaces, so those are stripped last.
+// suffixes after a number ("7th" -> "7"). Chord symbols never contain spaces, so those are stripped last,
+// along with parentheses and commas around altered extensions ("Ab9(#11)", "C7(#5,#9)") — Tonal only
+// recognizes the alterations run together ("Ab9#11", "C7#5#9"), not wrapped in punctuation.
 function normalizeChordQuery(query) {
   let text = query.replace(/\bchord\b/gi, '')
   for (const [pattern, replacement] of WORD_ALIASES) text = text.replace(pattern, replacement)
   text = text.replace(/(\d)(st|nd|rd|th)\b/gi, '$1')
-  return text.replace(/\s+/g, '')
+  return text.replace(/[(),\s]+/g, '')
 }
 
 // Given a chord symbol or name (e.g. "Ebmaj7", "Gm7b5/Db", "Eb Major 7th"), returns its notes as
