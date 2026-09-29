@@ -16,6 +16,7 @@ function Progression({
   playingChordId,
   onEditChord,
   editingChordId,
+  onPlaySection,
 }) {
   if (chords.length === 0) {
     return (
@@ -48,6 +49,8 @@ function Progression({
               onRemove={() => onRemove(entry.id)}
               isFirst={isFirst}
               isLast={isLast}
+              onPlay={() => onPlaySection(entry.id)}
+              playDisabled={playDisabled}
             />
           )
         }

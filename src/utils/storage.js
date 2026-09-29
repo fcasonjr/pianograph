@@ -96,6 +96,28 @@ export function saveBeatsPerMeasure(beatsPerMeasure) {
   }
 }
 
+const PLAY_ORDER_KEY = 'pianograph:playOrder'
+
+// A song form: an ordered list of section ids to play (e.g. A, B1, A, B2, A). Ids that no longer match
+// an existing section (renamed away, removed, or a stale save from a different song) are the caller's
+// responsibility to prune against the current progression — this just returns what was last saved.
+export function loadFormOrder() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(PLAY_ORDER_KEY) ?? '[]')
+    return Array.isArray(parsed) ? parsed.filter((id) => typeof id === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+export function saveFormOrder(order) {
+  try {
+    localStorage.setItem(PLAY_ORDER_KEY, JSON.stringify(order))
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}
+
 const HANDWRITTEN_CHORDS_KEY = 'pianograph:handwrittenChords'
 
 export function loadHandwrittenChords() {

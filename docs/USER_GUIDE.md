@@ -8,6 +8,7 @@ Pianograph turns chords you play into a lead sheet you can print or share. You b
 - [Arranging the progression](#arranging-the-progression)
 - [Measures and time signatures](#measures-and-time-signatures)
 - [Sections](#sections)
+- [Song form](#song-form)
 - [Repeats and endings](#repeats-and-endings)
 - [Playing it back](#playing-it-back)
 - [The lead sheet](#the-lead-sheet)
@@ -100,6 +101,17 @@ Sections are labels such as **A**, **B**, or **Bridge**, common in jazz standard
 - **Rename:** click the section's name badge in the progression.
 - **Move or delete:** sections have ← → and × buttons, and move like chords.
 
+## Song form
+
+Once a song has two or more sections, a **Song form** box appears above the progression: a way to play sections in whatever order you like — A, B1, A, B2, A — without retyping or duplicating any chords.
+
+- Tap a section's chip (**+ A**, **+ B1**, ...) to add it to the play order. Tap the same section again to add it a second time — the order shown below the chips grows one step at a time: `A → B1 → A → B2 → A`.
+- Each step has its own **×** to remove just that step.
+- **▶ Play form** plays exactly that sequence — each section with its own tempo, repeats, and endings intact, as if you'd written it out in full.
+- **Clear form** empties the order so you can build a different one.
+
+Your song form is saved with the song, including in **Save as file**, so reopening a song later doesn't mean rebuilding the order from scratch. If you remove a section that's part of a saved form, that step is quietly dropped from the order rather than left pointing at nothing.
+
 ## Repeats and endings
 
 Each card has four small toggle buttons for repeat marks:
@@ -120,6 +132,7 @@ Things to know:
 ## Playing it back
 
 - **▶ Play progression** plays the whole song from the top. The card being played is highlighted.
+- Each section also has its own **▶** next to its label, for playing from that point to the end without starting over — handy for auditioning just the bridge. For a custom order of sections, see [Song form](#song-form).
 - While it's playing, the button becomes **⏸ Pause** and **■ Stop**. Pause holds playback exactly where it is — press **▶ Resume** to continue from that same spot, not from the beginning. Stop ends playback and rewinds to the start, ready for a fresh **▶ Play progression** next time.
 - **Tempo** sets the speed in beats per minute (40 to 300). Each chord sounds for as many beats as you gave it.
 - Playback follows your repeats and endings, so a repeated chord plays, and lights up, twice.

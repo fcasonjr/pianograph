@@ -3,6 +3,7 @@ import Piano from './components/Piano/Piano'
 import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import HelpDialog from './components/HelpDialog/HelpDialog'
+import SongForm from './components/SongForm/SongForm'
 import { chordLabel } from './utils/chordDetection'
 import {
   loadPiano,
@@ -14,10 +15,12 @@ import {
 } from './utils/audio'
 import {
   loadBeatsPerMeasure,
+  loadFormOrder,
   loadPreferences,
   loadProgression,
   loadTitle,
   saveBeatsPerMeasure,
+  saveFormOrder,
   savePreferences,
   saveProgression,
   saveTitle,
@@ -25,6 +28,7 @@ import {
 import { parseImportedSong } from './utils/importProgression'
 import { parseImportedMidi } from './utils/importMidi'
 import { searchChord } from './utils/chordSearch'
+import { listSections, buildPlayOrder } from './utils/sections'
 import { TIME_SIGNATURE_OPTIONS } from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
@@ -52,6 +56,29 @@ function App() {
   const [applySignal, setApplySignal] = useState(0)
   const [editingChordId, setEditingChordId] = useState(null)
   const composePanelRef = useRef(null)
+  const [formOrder, setFormOrder] = useState(() => loadFormOrder())
+
+  useEffect(() => {
+    saveFormOrder(formOrder)
+  }, [formOrder])
+
+  // Drops any step whose section no longer exists (a section removed, or a form saved against a
+  // different song), so a stale reference can never silently try to play a section that's gone. Adjusted
+  // during render (like Piano's clearSignal) rather than in an effect, keyed on the section ids
+  // themselves so an edit to a chord's notes — which also changes `progression` — doesn't re-run this.
+  const sectionIdsKey = progression
+    .filter((entry) => entry.type === 'section')
+    .map((entry) => entry.id)
+    .join('\u0000')
+  const [prunedForKey, setPrunedForKey] = useState(sectionIdsKey)
+  if (sectionIdsKey !== prunedForKey) {
+    setPrunedForKey(sectionIdsKey)
+    const validIds = new Set(sectionIdsKey ? sectionIdsKey.split('\u0000') : [])
+    setFormOrder((prev) => {
+      const next = prev.filter((id) => validIds.has(id))
+      return next.length === prev.length ? prev : next
+    })
+  }
 
   useEffect(() => {
     // Start fetching the piano samples now so they're ready by the first note.
@@ -70,6 +97,7 @@ function App() {
 
   const currentLabel = chordLabel(selectedNotes, accidentals)
   const chordDisplay = currentLabel || 'Click keys to build a chord'
+  const sections = listSections(progression)
 
   function changeAccidentals(next) {
     setAccidentals(next)
@@ -207,6 +235,7 @@ function App() {
     }
     setProgression(song.progression)
     setTitle(song.title)
+    setFormOrder(song.playOrder ?? [])
     setBeatsPerMeasure(song.beatsPerMeasure)
     saveBeatsPerMeasure(song.beatsPerMeasure)
     setImportError('')
@@ -266,6 +295,7 @@ function App() {
     setProgression([])
     setTitle('')
     setEditingChordId(null)
+    setFormOrder([])
   }
 
   function handleChordSearch(event) {
@@ -288,18 +318,46 @@ function App() {
     playChord(notes)
   }
 
-  async function handlePlayProgression() {
-    if (playbackStatus !== 'stopped' || progression.length === 0) return
+  // Shared by "Play progression", "play from this section", and "Play form" — they differ only in which
+  // chords they hand over, not in how playback runs.
+  async function runPlayback(chords) {
+    if (playbackStatus !== 'stopped' || chords.length === 0) return
     setPlaybackStatus('playing')
     // onComplete fires from the audio transport's own clock, not a wall-clock setTimeout, so it still
     // lands at the right moment even if playback was paused for a while in between.
-    await playProgression(progression, tempo, {
+    await playProgression(chords, tempo, {
       onStepChange: setPlayingChordId,
       onComplete: () => {
         setPlaybackStatus('stopped')
         setPlayingChordId(null)
       },
     })
+  }
+
+  async function handlePlayProgression() {
+    await runPlayback(progression)
+  }
+
+  async function handlePlaySection(sectionId) {
+    const index = progression.findIndex((entry) => entry.id === sectionId)
+    if (index === -1) return
+    await runPlayback(progression.slice(index))
+  }
+
+  async function handlePlayForm() {
+    await runPlayback(buildPlayOrder(progression, formOrder))
+  }
+
+  function addFormStep(sectionId) {
+    setFormOrder((prev) => [...prev, sectionId])
+  }
+
+  function removeFormStep(index) {
+    setFormOrder((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  function clearForm() {
+    setFormOrder([])
   }
 
   function handlePauseProgression() {
@@ -472,7 +530,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure)}
+                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure, formOrder)}
                   disabled={progression.length === 0}
                   title="Save this arrangement as a file you can reopen and keep editing later"
                 >
@@ -606,6 +664,16 @@ function App() {
               </div>
             </div>
 
+            <SongForm
+              sections={sections}
+              order={formOrder}
+              onAdd={addFormStep}
+              onRemoveStep={removeFormStep}
+              onClear={clearForm}
+              onPlay={handlePlayForm}
+              playDisabled={playbackStatus !== 'stopped'}
+            />
+
             <Progression
               chords={progression}
               onRemove={removeChord}
@@ -620,6 +688,7 @@ function App() {
               playingChordId={playingChordId}
               onEditChord={startEditChord}
               editingChordId={editingChordId}
+              onPlaySection={handlePlaySection}
             />
           </section>
         </>

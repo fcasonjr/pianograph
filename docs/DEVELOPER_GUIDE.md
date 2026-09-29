@@ -12,6 +12,7 @@ How the code is put together, and the decisions behind it. For what the app does
 - [Chord detection](#chord-detection)
 - [Audio](#audio)
 - [Repeats](#repeats)
+- [Song form](#song-form)
 - [The lead sheet](#the-lead-sheet)
 - [Image export and sharing](#image-export-and-sharing)
 - [Styling](#styling)
@@ -97,6 +98,8 @@ Everything persists to `localStorage` on every change, with all reads and writes
 | `pianograph:title` | Song title. |
 | `pianograph:beatsPerMeasure` | 2–6. |
 | `pianograph:preferences` | `{ accidentals: 'sharps' \| 'flats', midiAutoAdd: boolean }`. |
+| `pianograph:playOrder` | Song form: an array of section ids (see [Song form](#song-form)). |
+| `pianograph:handwrittenChords` | `'true'` or `'false'`; the lead sheet's chord-name font. |
 
 `storage.js` normalizes older saved data (entries from before `type` or `beats` existed), so extend `normalizeEntry` if the shape changes.
 
@@ -106,12 +109,16 @@ Everything persists to `localStorage` on every change, with all reads and writes
 {
   "title": "Misty",
   "beatsPerMeasure": 4,
+  "playOrder": [0, 1, 0],
   "progression": [
     { "type": "section", "name": "A" },
-    { "type": "chord", "label": "Ebmaj7", "notes": ["D#2", "G3", "A#3", "D4"], "beats": 4, "repeatStart": true }
+    { "type": "chord", "label": "Ebmaj7", "notes": ["D#2", "G3", "A#3", "D4"], "beats": 4, "repeatStart": true },
+    { "type": "section", "name": "B" }
   ]
 }
 ```
+
+`playOrder` is each song-form step's position among the sections in document order (0 = the first section), not an id — see [Song form](#song-form) for why.
 
 **Open file** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
 
@@ -173,13 +180,26 @@ Notes:
 
 **Pause, resume, stop.** `pauseProgression`/`resumeProgression` are thin wrappers over `Tone.Transport.pause()`/`.start()` — Transport has its own pausable clock, so every already-scheduled event stays correctly positioned relative to it regardless of how long the pause lasts, with no manual bookkeeping of "where was I" needed. `stopProgression` is different from pause: it calls `Transport.stop()` (which also rewinds position to 0) and `Transport.cancel()`, then explicitly `releaseAll()`s both instruments — pausing alone only stops *new* notes from firing, it doesn't cut off a chord that's already mid-release. `App.jsx` mirrors this with a three-state `playbackStatus` (`'stopped' | 'playing' | 'paused'`) rather than the earlier boolean, and completion is detected via `playProgression`'s `onComplete` callback — itself scheduled on the Transport timeline via `Tone.Draw` — rather than a `setTimeout(totalMs)` on the caller's side, which would fire at the wrong wall-clock moment the first time a session paused.
 
+**Three ways in, one player.** `App.jsx`'s `runPlayback(chords)` is the single function that flips `playbackStatus` and calls `playProgression` — "Play progression" hands it the whole `progression`, "play from this section" hands it `progression.slice(index)`, and "Play form" hands it `buildPlayOrder(progression, formOrder)` (see [Song form](#song-form) below). None of them know or care which case they're in; `playProgression` itself is unchanged by any of this.
+
 ## Repeats
 
 `utils/repeats.js` turns the flat array into play order. A repeated block starts at the latest `repeatStart`, section marker, or previous `repeatEnd`. Each `:|` jumps back once. On the second pass, chords with `ending: 1` are skipped, so ending 2 plays next. A set of already-taken repeat ends guarantees termination on malformed input. There is no nesting, no repeat count, and no D.S./D.C./Coda.
 
 The lead sheet does not use this function; it draws the marks where they are written.
 
-## The lead sheet
+## Song form
+
+A song form is a *playback-only* concept layered on top of sections — it doesn't touch `progression` or the lead sheet at all, since real charts write each section once and rely on the player knowing the form rather than seeing it written out A-B1-A-B2-A.
+
+`utils/sections.js` has both halves: `listSections(progression)` groups the flat array into `{ id, name, chords }` per section (the same grouping the lead sheet already does, extracted here since three different things now need it — the lead sheet, the section chips, and playback), and `buildPlayOrder(progression, order)` takes an array of section ids (repeats allowed — `[A, B1, A, B2, A]`) and concatenates each one's marker-plus-chords into a single flat, `playProgression`-shaped array. Chord entries are reused as-is, including their ids, so a chord played on its second pass through the form still highlights the one physical card that represents it in the editor — nothing needs to know it's being played more than once.
+
+`App.jsx` holds the order as `formOrder` (an array of section ids), persisted via `storage.js`'s `loadFormOrder`/`saveFormOrder`. Two things keep it honest:
+
+- **Pruning.** If a section is renamed away or removed, any step referencing it needs to disappear rather than silently fail at playback time. This runs *during render*, not in a `useEffect` — mirroring the `clearSignal` pattern already used in `Piano.jsx` — keyed on a joined string of the current section ids (`sectionIdsKey`) compared against what was last pruned for (`prunedForKey`); when they differ, both are updated together in the same render-time `if`. Lint's `set-state-in-effect` rule exists to steer away from exactly the `useEffect` version of this, which would otherwise cause an extra render pass.
+- **`<SongForm>`** (`components/SongForm/`) renders `null` outright when there are fewer than two sections — a form needs at least two to mean anything — so a pruned-down order can sit correctly in state without any UI for it until a second section exists again.
+
+**Export/import.** The exported JSON format never stored ids (`exportProgression.js`'s comment: "chord entries drop id" — true of sections too), and ids are regenerated wholesale on every import, so `formOrder`'s ids can't be written to a file directly. Instead, `exportProgressionAsJson` converts each step to its *position* among the sections in document order (`listSections(progression)`, 0 = the first section) before writing `playOrder: [0, 1, 0]` to the file; `parseImportedSong` does the reverse once the new progression (and its freshly generated ids) exists, mapping each saved index back through a fresh `listSections` call. An out-of-range index (a hand-edited or corrupted file) is dropped rather than thrown as an error — the rest of the song still imports fine.
 
 Layout is split into a pure function and a component.
 
@@ -258,3 +278,4 @@ The app is a static site. `npm run build` produces `dist/`; upload it to any sta
 - MIDI input needs Web MIDI, so desktop Chrome or Edge.
 - The Share button is untested on real iPad Safari; the rest of the image pipeline is verified in a desktop browser.
 - MIDI import assumes quantized block chords; an expressive performance recording (arpeggios, a melody layered over the harmony, pedal overlap) will cluster into the wrong chords. There's no rest/silence detection, so a gap in the file is absorbed into the chord before it.
+- A song form is playback-only — it doesn't reorder the progression or the printed lead sheet, which always show each section once, in document order.

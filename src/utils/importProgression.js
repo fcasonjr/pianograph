@@ -1,6 +1,7 @@
 import { Note } from 'tonal'
 import { chordLabel } from './chordDetection'
 import { cleanMarks } from './repeats'
+import { listSections } from './sections'
 import { DEFAULT_BEATS_PER_MEASURE, MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS } from '../constants'
 
 const MAX_TITLE_LENGTH = 120
@@ -66,9 +67,15 @@ export function parseImportedSong(text, accidentals) {
   const beatsPerMeasure = TIME_SIGNATURE_OPTIONS.includes(fileBeats)
     ? fileBeats
     : DEFAULT_BEATS_PER_MEASURE
-  return {
-    title,
-    beatsPerMeasure,
-    progression: entries.map((entry, i) => parseEntry(entry, i, accidentals, beatsPerMeasure)),
-  }
+  const progression = entries.map((entry, i) => parseEntry(entry, i, accidentals, beatsPerMeasure))
+
+  // A song form is stored as each step's position among the sections (see exportProgression.js), since
+  // ids are regenerated on every import; map those positions to the freshly generated section ids.
+  const sections = listSections(progression)
+  const rawPlayOrder = !Array.isArray(data) && Array.isArray(data.playOrder) ? data.playOrder : []
+  const playOrder = rawPlayOrder
+    .filter((i) => Number.isInteger(i) && i >= 0 && i < sections.length)
+    .map((i) => sections[i].id)
+
+  return { title, beatsPerMeasure, playOrder, progression }
 }

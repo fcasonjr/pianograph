@@ -72,7 +72,15 @@ function HelpDialog() {
           before it, and clicking a section name renames it. On each chord, <strong>|:</strong> and{' '}
           <strong>:|</strong> mark a repeat, and <strong>1.</strong> / <strong>2.</strong> mark first and
           second endings. Play progression follows the repeats, and you can <strong>Pause</strong> and{' '}
-          <strong>Resume</strong> it mid-song, or <strong>Stop</strong> to rewind to the start.
+          <strong>Resume</strong> it mid-song, or <strong>Stop</strong> to rewind to the start. Each
+          section also has its own ▶ to play from there to the end.
+        </p>
+
+        <h3>Song form</h3>
+        <p>
+          With two or more sections, a <strong>Song form</strong> box lets you play them in any order —
+          A, B1, A, B2, A — without duplicating chords. Tap a section to add it to the order (tap again
+          to repeat it), then <strong>▶ Play form</strong>. The order is saved with the song.
         </p>
 
         <h3>Print or share the lead sheet</h3>

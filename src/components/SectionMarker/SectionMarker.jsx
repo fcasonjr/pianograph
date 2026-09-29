@@ -1,6 +1,16 @@
 import './SectionMarker.css'
 
-function SectionMarker({ name, onRename, onMoveLeft, onMoveRight, onRemove, isFirst, isLast }) {
+function SectionMarker({
+  name,
+  onRename,
+  onMoveLeft,
+  onMoveRight,
+  onRemove,
+  isFirst,
+  isLast,
+  onPlay,
+  playDisabled,
+}) {
   return (
     <div className="section-marker">
       <button
@@ -14,6 +24,16 @@ function SectionMarker({ name, onRename, onMoveLeft, onMoveRight, onRemove, isFi
       </button>
       <span className="section-marker-rule" aria-hidden="true" />
       <div className="section-marker-actions">
+        <button
+          type="button"
+          className="icon-btn"
+          onClick={onPlay}
+          disabled={playDisabled}
+          aria-label={`Play from section ${name}`}
+          title={`Play from ${name} to the end`}
+        >
+          ▶
+        </button>
         <button
           type="button"
           className="icon-btn"
