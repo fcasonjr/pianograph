@@ -95,3 +95,21 @@ export function saveBeatsPerMeasure(beatsPerMeasure) {
     // best-effort, same as saveProgression
   }
 }
+
+const HANDWRITTEN_CHORDS_KEY = 'pianograph:handwrittenChords'
+
+export function loadHandwrittenChords() {
+  try {
+    return localStorage.getItem(HANDWRITTEN_CHORDS_KEY) === 'true'
+  } catch {
+    return false
+  }
+}
+
+export function saveHandwrittenChords(enabled) {
+  try {
+    localStorage.setItem(HANDWRITTEN_CHORDS_KEY, String(enabled))
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}

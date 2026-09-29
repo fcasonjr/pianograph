@@ -133,6 +133,7 @@ Open the **Lead sheet** tab to see the finished chart. It is always drawn as bla
 - Each **section** starts a new row. Within a row, chords are spaced by how long they last, and barlines mark each measure.
 - Each chord has its **name** and a **piano diagram** with the played keys highlighted. Where a chord has several possible names, the sheet shows the first one.
 - The number of measures per row adapts to the screen width, up to four, so an iPad shows shorter rows than a desktop. Rows with very short chords hold fewer measures so that the diagrams stay readable.
+- **Handwritten chord names**, a checkbox in the toolbar, switches the chord names to a handwritten-style font, closer to a classic hand-copied jazz fake book than to typeset text. It only changes the chord names — the title and everything else stay as they are. Your choice is remembered, on or off, and it carries through to Print, Download PNG, and Share.
 
 ## Printing, PDF, and sharing
 

@@ -9,6 +9,7 @@ import {
   renderSheetPng,
   shareSheetPng,
 } from '../../utils/sheetImage'
+import { loadHandwrittenChords, saveHandwrittenChords } from '../../utils/storage'
 import './LeadSheet.css'
 
 const STAFF_LINE_YS = [2, 3, 4, 5, 6]
@@ -66,8 +67,11 @@ function useContentWidth() {
 // called straight from a tap: iOS only allows share() during a user gesture. Whatever the sheet depends
 // on gets a fresh `version`; a result only counts if it was rendered for the current version, which
 // makes "preparing" derived state rather than something set inside the effect.
-function useSheetImage(sheetRef, enabled, rows, title, contentWidth) {
-  const version = useMemo(() => ({ rows, title, contentWidth }), [rows, title, contentWidth])
+function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten) {
+  const version = useMemo(
+    () => ({ rows, title, contentWidth, handwritten }),
+    [rows, title, contentWidth, handwritten],
+  )
   const [result, setResult] = useState({ version: null, blob: null, failed: false })
 
   useEffect(() => {
@@ -217,13 +221,27 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
     [contentWidth, beatsPerMeasure],
   )
   const rows = useMemo(() => buildLeadSheetRows(progression, rowCapacity), [progression, rowCapacity])
-  const image = useSheetImage(sheetRef, rows.length > 0, rows, title, contentWidth)
   const [canShare] = useState(() => canShareImageFiles())
+  const [handwritten, setHandwritten] = useState(() => loadHandwrittenChords())
+  const image = useSheetImage(sheetRef, rows.length > 0, rows, title, contentWidth, handwritten)
+
+  function changeHandwritten(next) {
+    setHandwritten(next)
+    saveHandwrittenChords(next)
+  }
 
   return (
     <div className="leadsheet-page">
       {rows.length > 0 && (
         <div className="leadsheet-toolbar no-print">
+          <label className="leadsheet-handwritten-toggle">
+            <input
+              type="checkbox"
+              checked={handwritten}
+              onChange={(event) => changeHandwritten(event.target.checked)}
+            />
+            Handwritten chord names
+          </label>
           <span className="leadsheet-image-status" role="status">
             {image.status === 'preparing' && 'Preparing image…'}
             {image.status === 'error' &&
@@ -258,7 +276,7 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
       )}
       <div className="leadsheet-sheet">
         {/* The paper is a separate inner element so the PNG captures it without the card's border and shadow. */}
-        <div className="leadsheet-paper" ref={sheetRef}>
+        <div className={`leadsheet-paper ${handwritten ? 'handwritten' : ''}`} ref={sheetRef}>
           {rows.length === 0 ? (
             <p className="leadsheet-empty">Add some chords to see your lead sheet.</p>
           ) : (

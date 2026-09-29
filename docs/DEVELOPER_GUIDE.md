@@ -193,6 +193,8 @@ Layout is split into a pure function and a component.
 
 **Clef.** The treble clef is an inline SVG path outlined from the Bravura font (SIL OFL). A font glyph rendered at different sizes on different devices, and in the exported PNG, and sat off the staff.
 
+**Handwritten chord names** is an optional style, not a fixed choice: a checkbox (`handwritten` state in `LeadSheet.jsx`, persisted via `storage.js`'s standalone `loadHandwrittenChords`/`saveHandwrittenChords` — a dedicated key rather than folded into `loadPreferences`'s bundled object, since nothing outside `LeadSheet` needs it) toggles a `.handwritten` class on `.leadsheet-paper`, which `LeadSheet.css` uses to swap `.leadsheet-chord-name`'s font to Architects Daughter (SIL OFL, bundled in `public/fonts/`, credited in that folder's `README.txt`) at a larger size and normal weight — a script font has no bold face of its own, and forcing one gets a browser-synthesized bold that looks poor, so weight is reset explicitly rather than inherited. `useSheetImage`'s `version` memo includes `handwritten`, or toggling it wouldn't invalidate the cached PNG and Download PNG/Share would keep exporting the old font. `renderSheetPng` awaits `document.fonts.ready` before capturing, since the font is fetched lazily on first use (the toggle is off by default) and html-to-image would otherwise rasterize the fallback font if capture ran before the woff2 finished loading.
+
 ## Image export and sharing
 
 `utils/sheetImage.js` and the `useSheetImage` hook in `LeadSheet.jsx` produce the PNG.

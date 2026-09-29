@@ -78,7 +78,8 @@ function HelpDialog() {
         <p>
           Open the <strong>Lead sheet</strong> tab. Give the song a title first, then use{' '}
           <strong>Print / Save as PDF</strong>, <strong>Download PNG</strong>, or on an iPad or phone{' '}
-          <strong>Share</strong> to send the image.
+          <strong>Share</strong> to send the image. Tick <strong>Handwritten chord names</strong> for a
+          hand-copied fake-book look — it's remembered, and easy to switch back off.
         </p>
 
         <h3>Saving</h3>

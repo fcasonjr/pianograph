@@ -8,7 +8,7 @@ Build piano chords by clicking keys (or playing a MIDI keyboard), arrange them i
 - **Sound.** Real piano samples for previewing notes, chords, and the whole progression at a tempo you choose. If the samples can't load, it falls back to a synth.
 - **MIDI keyboard input** (Chrome or Edge on a computer). Notes stay selected after you let go, so both hands can play a chord. The chord is added automatically a moment after you lift your hands, or when you press a sustain pedal.
 - **Progression.** Reorder, copy, and remove chords; edit an already-added chord's notes right on its card; set how many beats each lasts (several short chords can share a measure); choose a 2/4–6/4 time signature; add section labels (A, B, Bridge…) and repeat signs with first and second endings.
-- **Lead sheet.** Prints to PDF from the browser, downloads as a PNG, or uses the native share sheet on iPad and phone.
+- **Lead sheet.** Prints to PDF from the browser, downloads as a PNG, or uses the native share sheet on iPad and phone. An optional handwritten font for the chord names gives it more of a classic hand-copied fake-book feel.
 - **Save and move songs.** Work is saved automatically in the browser. Export and import JSON to back up or move a song to another device, or export it as plain text.
 - **Import a MIDI file.** Bring in a file of block chords — a chord-chart or fake-book export — and it's turned straight into a progression, ready to clean up and use.
 
@@ -48,3 +48,4 @@ React and Vite, [Tone.js](https://tonejs.github.io/) for audio, [Tonal](https://
 
 - Piano sound: [Salamander Grand Piano](https://archive.org/details/SalamanderGrandPianoV3) by Alexander Holm, [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/).
 - The treble clef shape is outlined from the Bravura font (SIL Open Font License).
+- Handwritten chord names: [Architects Daughter](https://fonts.google.com/specimen/Architects+Daughter) by Kimberly Geswein, SIL Open Font License.

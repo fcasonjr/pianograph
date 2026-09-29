@@ -5,6 +5,10 @@ import { downloadFile, fileBase } from './download'
 const RENDER_OPTIONS = { pixelRatio: 2, backgroundColor: '#ffffff' }
 
 export async function renderSheetPng(element) {
+  // A custom @font-face (e.g. the handwritten chord-name style) can still be loading when this runs;
+  // capturing before it's ready would rasterize the fallback font instead. document.fonts.ready is a
+  // safe no-op when only system fonts are in use.
+  await document.fonts.ready
   // html-to-image can return a blank image on its first pass in Safari, so render twice and keep the second.
   await toBlob(element, RENDER_OPTIONS)
   const blob = await toBlob(element, RENDER_OPTIONS)
