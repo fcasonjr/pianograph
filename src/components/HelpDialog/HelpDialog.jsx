@@ -71,7 +71,9 @@ function HelpDialog() {
           <strong>Add section</strong> appends an A/B/bridge label; the § button on a chord starts one right
           before it, and clicking a section name renames it. On each chord, <strong>|:</strong> and{' '}
           <strong>:|</strong> mark a repeat, and <strong>1.</strong> / <strong>2.</strong> mark first and
-          second endings. Play progression follows the repeats, and you can <strong>Pause</strong> and{' '}
+          second endings — marking <strong>1.</strong> loops back on its own, so <strong>:|</strong> is
+          only needed for a repeat with no endings. Play progression follows the repeats, and you can{' '}
+          <strong>Pause</strong> and{' '}
           <strong>Resume</strong> it mid-song, or <strong>Stop</strong> to rewind to the start. Each
           section also has its own ▶ to play from there to the end.
         </p>

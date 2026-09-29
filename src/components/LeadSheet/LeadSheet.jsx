@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import PianoDiagram from '../PianoDiagram/PianoDiagram'
 import { buildLeadSheetRows } from '../../utils/leadsheetLayout'
+import { endsRepeat } from '../../utils/repeats'
 import { diagramNaturalWidth } from '../../utils/diagramSize'
 import { TREBLE_CLEF_PATH } from './trebleClef'
 import {
@@ -96,7 +97,7 @@ function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten
   return { status: current?.failed ? 'error' : 'preparing', blob: null }
 }
 
-function StaffRow({ row, beatsPerMeasure }) {
+function StaffRow({ row, beatsPerMeasure, impliedRepeatEndIds }) {
   const totalBeats = row.measures.reduce((sum, m) => sum + m.beats, 0) || 1
 
   let cursor = 0
@@ -106,11 +107,14 @@ function StaffRow({ row, beatsPerMeasure }) {
     return { ...measure, start, end: cursor }
   })
 
-  // Repeat glyphs sit at chord boundaries and replace the plain barline at the same position.
+  // Repeat glyphs sit at chord boundaries and replace the plain barline at the same position. A first
+  // ending's own last chord draws the end-repeat glyph even without an explicit `:|` — see
+  // utils/repeats.js's endsRepeat, which playback follows the same way, so what's printed matches what's
+  // heard.
   const repeatMarks = []
   placed.forEach((m) => {
     if (m.repeatStart) repeatMarks.push({ kind: 'start', x: m.start })
-    if (m.repeatEnd) repeatMarks.push({ kind: 'end', x: m.end })
+    if (m.repeatEnd || impliedRepeatEndIds.has(m.id)) repeatMarks.push({ kind: 'end', x: m.end })
   })
   const repeatXs = new Set(repeatMarks.map((mark) => mark.x))
   const barlineXs = barlinePositions(totalBeats, beatsPerMeasure).filter((x) => !repeatXs.has(x))
@@ -221,6 +225,18 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
     [contentWidth, beatsPerMeasure],
   )
   const rows = useMemo(() => buildLeadSheetRows(progression, rowCapacity), [progression, rowCapacity])
+  // A first ending's own last chord always closes its repeat when played (see utils/repeats.js), even
+  // without an explicit `:|` — computed here, once, over the real progression (not a row's measures, so
+  // an ending that wraps onto a second printed row is still identified correctly either way).
+  const impliedRepeatEndIds = useMemo(
+    () =>
+      new Set(
+        progression
+          .map((entry, i) => (entry.type === 'chord' && endsRepeat(progression, i) ? entry.id : null))
+          .filter(Boolean),
+      ),
+    [progression],
+  )
   const [canShare] = useState(() => canShareImageFiles())
   const [handwritten, setHandwritten] = useState(() => loadHandwrittenChords())
   const image = useSheetImage(sheetRef, rows.length > 0, rows, title, contentWidth, handwritten)
@@ -288,6 +304,7 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
                     key={row.measures[0]?.id ?? `label-${index}`}
                     row={row}
                     beatsPerMeasure={beatsPerMeasure}
+                    impliedRepeatEndIds={impliedRepeatEndIds}
                   />
                 ))}
               </div>

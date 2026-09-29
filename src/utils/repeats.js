@@ -1,16 +1,26 @@
 // Chords carry optional repeat marks: `repeatStart` (a |: before the chord), `repeatEnd`
 // (a :| after it) and `ending` (1 or 2, inside a first/second ending).
 
+// A chord closes a repeat block if it's explicitly marked `:|`, or it's the last chord of a first
+// ending — a first ending always loops back at its own end, even if `:|` wasn't separately toggled,
+// since that's what "first ending" means. (Only the *last* chord of a multi-chord first ending counts,
+// so an ending doesn't loop back partway through itself.)
+export function endsRepeat(progression, index) {
+  const entry = progression[index]
+  if (entry.repeatEnd) return true
+  return entry.ending === 1 && progression[index + 1]?.ending !== 1
+}
+
 function nextRepeatEnd(progression, from) {
   for (let j = from; j < progression.length; j++) {
-    if (progression[j].type === 'chord' && progression[j].repeatEnd) return j
+    if (progression[j].type === 'chord' && endsRepeat(progression, j)) return j
   }
   return -1
 }
 
 // Returns the chords in play order. A repeated block starts at the latest repeatStart chord, section
-// marker, or previous repeatEnd (so a lone :| repeats back to there). Each :| jumps back exactly once,
-// and on the second pass first-ending chords are skipped so the second ending plays next.
+// marker, or previous repeatEnd (so a lone :| repeats back to there). Each repeat end jumps back
+// exactly once, and on the second pass first-ending chords are skipped so the second ending plays next.
 export function unfoldRepeats(progression) {
   const played = []
   const takenRepeatEnds = new Set()
@@ -42,7 +52,7 @@ export function unfoldRepeats(progression) {
 
     played.push(entry)
 
-    if (entry.repeatEnd) {
+    if (endsRepeat(progression, i)) {
       if (!takenRepeatEnds.has(i)) {
         takenRepeatEnds.add(i)
         i = blockStart

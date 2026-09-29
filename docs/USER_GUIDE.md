@@ -120,13 +120,14 @@ Each card has four small toggle buttons for repeat marks:
 - **:|** puts an end-repeat sign after the chord. The music goes back and plays the repeated part once more.
 - **1.** and **2.** mark the chord as part of a first or second ending. Click again to turn one off.
 
-A typical chart: put **|:** on the first chord of the section, mark the last chords of the first pass with **1.** (putting **:|** on the last one), then mark the chords that follow with **2.**. On playback you get the section, then the section again with the second ending in place of the first.
+A typical chart: put **|:** on the first chord of the section, mark the last chord of the first pass with **1.**, then mark the chord (or chords) that follow with **2.**. On playback you get the section, then the section again with the second ending in place of the first.
 
 Things to know:
 
 - If a repeat has no **|:**, it goes back to the start of its section (or the last repeat).
+- Marking **1.** always loops back at the end of that ending, even if you never toggled **:|** — that's what a first ending means. **:|** is only something you need to set yourself for a plain repeat that doesn't use endings at all.
 - Only first and second endings are supported. There are no repeat counts, nested repeats, D.S., D.C., or Coda.
-- Repeats are drawn as proper repeat barlines, and endings as bracketed "1." and "2." marks above the staff. If a repeat runs onto a second row, the bracket is continued there.
+- Repeats are drawn as proper repeat barlines, and endings as bracketed "1." and "2." marks above the staff — including the end-repeat barline after a first ending, even if you didn't toggle **:|** yourself, so the printed chart always matches what plays. If a repeat runs onto a second row, the bracket is continued there.
 - Duplicating a chord copies its ending but not its repeat signs, so you never get two start signs by accident.
 
 ## Playing it back
