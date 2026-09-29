@@ -103,6 +103,19 @@
   gap: 8px;
 }
 
+.actions-divider {
+  width: 1px;
+  height: 20px;
+  margin: 0 4px;
+  background: var(--border-strong);
+}
+
+.save-hint {
+  margin: 2px 0 0;
+  font-size: 12.5px;
+  color: var(--text);
+}
+
 .progression-controls {
   gap: 16px;
 }

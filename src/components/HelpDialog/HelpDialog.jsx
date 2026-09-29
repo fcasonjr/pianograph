@@ -85,8 +85,11 @@ function HelpDialog() {
 
         <h3>Saving</h3>
         <p>
-          Your work is saved automatically, but only in this browser on this device. To back it up or move
-          it to another device, use <strong>Export JSON</strong> and then <strong>Import JSON</strong>.
+          Your work is saved automatically, but only in this browser on this device. <strong>Save as
+          file</strong> keeps a version you can reopen with <strong>Open file</strong> — on this device,
+          another one, or later after changes. Give a song a different name before saving to keep
+          variations (say, a simplified voicing) as their own separate files rather than overwriting the
+          original.
         </p>
 
         <h3>Importing a MIDI file</h3>

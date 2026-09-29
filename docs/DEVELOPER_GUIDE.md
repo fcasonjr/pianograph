@@ -100,7 +100,7 @@ Everything persists to `localStorage` on every change, with all reads and writes
 
 `storage.js` normalizes older saved data (entries from before `type` or `beats` existed), so extend `normalizeEntry` if the shape changes.
 
-**Export JSON** (`exportProgression.js`) produces:
+**Save as file** — labeled that way in the UI, but still `exportProgressionAsJson` in `exportProgression.js`, since the underlying format and JSON file extension haven't changed — produces:
 
 ```json
 {
@@ -113,7 +113,7 @@ Everything persists to `localStorage` on every change, with all reads and writes
 }
 ```
 
-**Import** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
+**Open file** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
 
 **Export text** is one-way: `-- A --  |  |: Cmaj7  |  [1.] Am7 :|`.
 
@@ -250,7 +250,7 @@ The app is a static site. `npm run build` produces `dist/`; upload it to any sta
 
 ## Known limitations
 
-- Songs live only in the browser they were made in; moving them needs Export and Import JSON.
+- Songs live only in the browser they were made in; moving them needs Save as file and Open file.
 - Only first and second endings; no nested repeats, repeat counts, D.S./D.C./Coda.
 - Time signatures are N/4 only.
 - The sheet shows chords only: there is no melody, rhythm marks, or lyrics.

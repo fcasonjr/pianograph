@@ -79,7 +79,7 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 
 **Editing a chord you've already added.** Click the chord's name or its diagram on the card, and its notes load onto the keyboard above — the card gets a dashed outline so you can see which one you're editing. Add a bass note, drop the 5th, search a different voicing, anything you'd normally do while building a chord, then press **Save changes** to write it back into that same card. Its position, length, and any repeat marks stay exactly as they were — only the notes and name change. **Cancel** backs out without saving. Editing one card while already editing another just switches to the new one; nothing is lost, since nothing is saved until you press Save changes.
 
-**Clear** at the top of the Progression panel removes every chord and section, and clears the song title too, so you're starting a new song rather than just emptying the current one. It doesn't ask for confirmation and can't be undone, so export first if you might want the song back.
+**Clear** at the top of the Progression panel removes every chord and section, and clears the song title too, so you're starting a new song rather than just emptying the current one. It doesn't ask for confirmation and can't be undone, so Save as file first if you might want the song back.
 
 ## Measures and time signatures
 
@@ -155,16 +155,18 @@ Your song is **saved automatically** in your browser as you work, including its 
 - The song exists only in that browser on that device. Your computer and your iPad each have their own separate copy.
 - Clearing your browser's site data, or using a private window, can lose it.
 
-To back up or move a song, use the buttons in the Progression panel:
+To back up, move, or keep versions of a song, use the buttons in the Progression panel:
 
-- **Export JSON** downloads the whole song. **Import JSON** loads such a file. If you already have chords, the app asks before replacing them. A file that can't be read is rejected with a message, and nothing changes.
-- **Export text** downloads a plain-text version of the chord chart, such as `|: Cmaj7  |  Am7 :|`. It can't be imported again.
+- **Save as file** downloads the whole song — chords, title, time signature, everything — as a file you can come back to later. **Open file** loads one back in. If you already have chords, the app asks before replacing them. A file that can't be read is rejected with a message, and nothing changes.
+- **Export text** downloads a plain-text version of the chord chart, such as `|: Cmaj7  |  Am7 :|`. It's one-way — there's no way to open it back up as a song.
 
-To move a song to your iPad: on the computer, choose Export JSON, send the file to the iPad (AirDrop or email works), then on the iPad open Pianograph and use Import JSON.
+To move a song to your iPad: on the computer, choose Save as file, send the file to the iPad (AirDrop or email works), then on the iPad open Pianograph and use Open file.
+
+**Keeping variations as their own files.** Save as file is also how you branch a song — say, a version with only root and 5th, or a specific inversion, alongside the original. Save the original first, then make your changes (the [editing](#arranging-the-progression) on each chord's card works well for this — add a note, drop one, or pick a specific voicing), give the song a different name in the title box, and Save as file again. That's a second, independent file; Open file brings back either one, anytime.
 
 ## Importing a MIDI file
 
-**Import MIDI**, next to Import JSON, reads a `.mid` file and turns it straight into a progression, so you don't have to click in every chord by hand. It works well for a **file of block chords**: a chart, fake-book export, or backing track where the chords are struck together and held for a clean length — the kind of file you'd get from chord-chart software, not a recording of someone playing expressively.
+**Import MIDI**, next to Open file, reads a `.mid` file and turns it straight into a progression, so you don't have to click in every chord by hand. It works well for a **file of block chords**: a chart, fake-book export, or backing track where the chords are struck together and held for a clean length — the kind of file you'd get from chord-chart software, not a recording of someone playing expressively.
 
 - Each group of notes that starts together becomes one chord card, with its length taken from the file's own timing.
 - The song's time signature comes from the file; if it isn't a plain N/4 meter, it falls back to 4/4.
@@ -173,7 +175,7 @@ To move a song to your iPad: on the computer, choose Export JSON, send the file 
 
 A file recorded from a live performance — arpeggiated chords, a melody note mixed in with the harmony, notes that overlap because of the sustain pedal — will import messily, since the app can't tell melody from harmony or separate a smear of overlapping notes into clean chords. Check the result over card by card, and use the ← → ⧉ × controls to fix anything that came in wrong, the same as with any other chord.
 
-As with Import JSON, importing asks before replacing a progression you've already started.
+As with Open file, importing asks before replacing a progression you've already started.
 
 ## Troubleshooting
 
@@ -187,6 +189,6 @@ As with Import JSON, importing asks before replacing a progression you've alread
 
 **The Share button isn't there.** It appears only where the browser can share files over https. Use Download PNG or Print / Save as PDF instead.
 
-**My songs are missing.** Songs are stored per browser. If you switched browsers or devices, use Export JSON and Import JSON to bring the song across.
+**My songs are missing.** Songs are stored per browser. If you switched browsers or devices, use Save as file and Open file to bring the song across.
 
 **The keys are hard to read on the lead sheet.** Chords with wide voicings are drawn a bit smaller. Making the browser window wider, or using a landscape iPad, gives each diagram more room.

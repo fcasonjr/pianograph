@@ -457,17 +457,10 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={clearProgression}
-                  disabled={progression.length === 0}
-                >
-                  Clear
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-ghost"
                   onClick={() => fileInputRef.current?.click()}
+                  title="Open a version you saved earlier"
                 >
-                  Import JSON
+                  Open file
                 </button>
                 <input
                   ref={fileInputRef}
@@ -479,7 +472,18 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
+                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure)}
+                  disabled={progression.length === 0}
+                  title="Save this arrangement as a file you can reopen and keep editing later"
+                >
+                  Save as file
+                </button>
+                <span className="actions-divider" aria-hidden="true" />
+                <button
+                  type="button"
+                  className="btn btn-ghost"
                   onClick={() => midiInputRef.current?.click()}
+                  title="Bring in chords from a .mid file"
                 >
                   Import MIDI
                 </button>
@@ -493,21 +497,28 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure)}
+                  onClick={() => exportProgressionAsText(progression, title)}
                   disabled={progression.length === 0}
+                  title="A plain-text chord chart for pasting elsewhere; can't be reopened here"
                 >
-                  Export JSON
+                  Export text
                 </button>
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsText(progression, title)}
+                  onClick={clearProgression}
                   disabled={progression.length === 0}
+                  title="Remove every chord and start a new song"
                 >
-                  Export text
+                  Clear
                 </button>
               </div>
             </div>
+
+            <p className="save-hint">
+              Working on a variation? Give it a new name above, then <strong>Save as file</strong> to
+              keep it as its own version — <strong>Open file</strong> brings any saved version back.
+            </p>
 
             {importError && (
               <p className="import-error" role="alert">
