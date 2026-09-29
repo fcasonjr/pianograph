@@ -14,6 +14,9 @@ function Piano({
   octaveCount = OCTAVE_COUNT,
   onNotesChange,
   clearSignal = 0,
+  applySignal = 0,
+  applyNotes = null,
+  applyMode = 'replace',
   midiAutoAdd = false,
   onMidiAutoAddChange,
   onMidiCommit,
@@ -36,6 +39,15 @@ function Piano({
     [whiteKeys, blackKeys],
   )
 
+  const [handledApplySignal, setHandledApplySignal] = useState(applySignal)
+  // The parent bumps applySignal to load a searched chord onto the keyboard, either replacing the
+  // current selection or adding to it (e.g. a hand-clicked bass note plus a searched upper structure).
+  if (applySignal !== handledApplySignal) {
+    setHandledApplySignal(applySignal)
+    const notes = (applyNotes ?? []).filter((id) => validIds.has(id))
+    setActiveNotes((prev) => (applyMode === 'merge' ? new Set([...prev, ...notes]) : new Set(notes)))
+  }
+
   useEffect(() => {
     onNotesChange?.(Array.from(activeNotes))
   }, [activeNotes, onNotesChange])
@@ -54,8 +66,8 @@ function Piano({
   }
 
   useEffect(() => cancelAutoAdd, [])
-  // "Clear keyboard" should also cancel an add that is about to fire.
-  useEffect(cancelAutoAdd, [clearSignal])
+  // Clearing the keyboard, or loading a searched chord onto it, should also cancel an add that is about to fire.
+  useEffect(cancelAutoAdd, [clearSignal, applySignal])
 
   useEffect(() => {
     const el = scrollRef.current

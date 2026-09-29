@@ -17,6 +17,7 @@ import {
 } from './utils/storage'
 import { parseImportedSong } from './utils/importProgression'
 import { parseImportedMidi } from './utils/importMidi'
+import { searchChord } from './utils/chordSearch'
 import { TIME_SIGNATURE_OPTIONS } from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
@@ -37,6 +38,11 @@ function App() {
   const fileInputRef = useRef(null)
   const midiInputRef = useRef(null)
   const [clearSignal, setClearSignal] = useState(0)
+  const [chordSearchQuery, setChordSearchQuery] = useState('')
+  const [chordSearchMerge, setChordSearchMerge] = useState(false)
+  const [chordSearchError, setChordSearchError] = useState('')
+  const [applyNotes, setApplyNotes] = useState(null)
+  const [applySignal, setApplySignal] = useState(0)
 
   useEffect(() => {
     // Start fetching the piano samples now so they're ready by the first note.
@@ -210,6 +216,22 @@ function App() {
 
   function clearProgression() {
     setProgression([])
+    setTitle('')
+  }
+
+  function handleChordSearch(event) {
+    event.preventDefault()
+    const query = chordSearchQuery.trim()
+    if (!query) return
+    try {
+      const notes = searchChord(query)
+      setApplyNotes(notes)
+      setApplySignal((n) => n + 1)
+      setChordSearchError('')
+      if (!isPlaying) playChord(notes)
+    } catch (error) {
+      setChordSearchError(error.message)
+    }
   }
 
   function handlePlayChord(notes) {
@@ -306,9 +328,37 @@ function App() {
                 </button>
               </div>
             </div>
+            <form className="chord-search" onSubmit={handleChordSearch}>
+              <input
+                type="text"
+                className="input chord-search-input"
+                placeholder="Search a chord, e.g. Ebmaj7"
+                aria-label="Chord search"
+                value={chordSearchQuery}
+                onChange={(event) => {
+                  setChordSearchQuery(event.target.value)
+                  setChordSearchError('')
+                }}
+              />
+              <button type="submit" className="btn btn-secondary" disabled={!chordSearchQuery.trim()}>
+                Search
+              </button>
+              <label className="chord-search-merge">
+                <input
+                  type="checkbox"
+                  checked={chordSearchMerge}
+                  onChange={(event) => setChordSearchMerge(event.target.checked)}
+                />
+                Add to keyboard
+              </label>
+            </form>
+            {chordSearchError && <p className="chord-search-error">{chordSearchError}</p>}
             <Piano
               onNotesChange={setSelectedNotes}
               clearSignal={clearSignal}
+              applySignal={applySignal}
+              applyNotes={applyNotes}
+              applyMode={chordSearchMerge ? 'merge' : 'replace'}
               midiAutoAdd={midiAutoAdd}
               onMidiAutoAddChange={changeMidiAutoAdd}
               onMidiCommit={commitMidiChord}

@@ -4,7 +4,7 @@ Build piano chords by clicking keys (or playing a MIDI keyboard), arrange them i
 
 ## Features
 
-- **Chord builder.** Click keys across four octaves (C2–B5), so two-handed voicings with a low bass note fit. The chord name is detected as you play (`Cmaj7`, `Dm7 / F6/D`, slash chords and jazz voicings included), with a Sharps/Flats setting for spelling.
+- **Chord builder.** Click keys across four octaves (C2–B5), so two-handed voicings with a low bass note fit. The chord name is detected as you play (`Cmaj7`, `Dm7 / F6/D`, slash chords and jazz voicings included), with a Sharps/Flats setting for spelling. Or type a chord symbol into the search box to select its notes for you, then adjust by hand from there.
 - **Sound.** Real piano samples for previewing notes, chords, and the whole progression at a tempo you choose. If the samples can't load, it falls back to a synth.
 - **MIDI keyboard input** (Chrome or Edge on a computer). Notes stay selected after you let go, so both hands can play a chord. The chord is added automatically a moment after you lift your hands, or when you press a sustain pedal.
 - **Progression.** Reorder, copy, and remove chords; set how many beats each lasts (several short chords can share a measure); choose a 2/4–6/4 time signature; add section labels (A, B, Bridge…) and repeat signs with first and second endings.

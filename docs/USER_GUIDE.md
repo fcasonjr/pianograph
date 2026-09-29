@@ -40,6 +40,8 @@ If the notes don't match a known chord, the display says **No chord match**. You
 
 **Clear keyboard** deselects all notes without touching your saved chords, so you can move on to the next chord without deselecting each note.
 
+**Search a chord.** Instead of clicking every note by hand, type a chord symbol — `Ebmaj7`, `Gm7b5/Db`, `Eb Maj7` with a space, any capitalization — into the search box and press **Search** (or Enter). Its notes are selected on the keyboard for you, voiced starting around the middle of the range. From there it's just like a chord you clicked in by hand: click any key to add or drop a note. Tick **Add to keyboard** first if you want the searched chord added to whatever's already selected, rather than replacing it — useful for playing a bass note yourself and searching the chord that goes over it. If the text isn't a chord Pianograph recognizes, it says so and leaves the keyboard as it was.
+
 ## Using a MIDI keyboard
 
 Plug in a MIDI keyboard and open Pianograph in **Chrome or Edge on a computer**. When the browser asks for permission to use MIDI devices, allow it. The status line above the keyboard changes to "MIDI connected" and shows the device name. Safari, Firefox, and iPad browsers can't use MIDI.
@@ -73,7 +75,7 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 | Number buttons and **− / +** | Set how many beats the chord lasts (see below). |
 | **\|:  :\|  1.  2.** | Repeat and ending marks (see [Repeats and endings](#repeats-and-endings)). |
 
-**Clear** at the top of the Progression panel removes every chord and section at once. It doesn't ask for confirmation and can't be undone, so export first if you might want the song back.
+**Clear** at the top of the Progression panel removes every chord and section, and clears the song title too, so you're starting a new song rather than just emptying the current one. It doesn't ask for confirmation and can't be undone, so export first if you might want the song back.
 
 ## Measures and time signatures
 

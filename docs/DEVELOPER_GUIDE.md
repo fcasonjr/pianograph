@@ -145,6 +145,10 @@ Notes:
 - Call `onNotesChange` from an effect, never from inside a `setState` updater, or React warns about updating a component while rendering another.
 - "Clear keyboard" works by the parent incrementing a `clearSignal` prop, which `Piano` handles during render.
 
+**Chord search** (`utils/chordSearch.js`, `searchChord`) is a fourth way to select notes, alongside mouse, MIDI, and this is really the same "set the selection" mechanism as Clear keyboard, generalized: `App` holds `applyNotes`/`applySignal` state and bumps the signal on a successful search; `Piano` handles it with the identical render-time-diff pattern as `clearSignal` (a second `handledApplySignal` comparison), rather than an effect. The one difference from Clear is a mode — `applyMode: 'replace' | 'merge'` — read directly off the `chordSearchMerge` checkbox each render, so there's no separate mode state to keep in sync with the signal.
+
+`searchChord` itself: Tonal's `Chord.get` parses a symbol into note names (root-first, or bass-first for a slash chord) with no octave, tolerating a wide range of input — different casing, extra whitespace (stripped before parsing), and slash-bass chords all just work, so there's no bespoke input normalization beyond whitespace removal. Turning those into specific keys is `searchChord`'s own job: each note is placed in the lowest octave that keeps it above the previous one, so the result is always a single ascending voicing starting near the middle of the keyboard (`DEFAULT_START_OCTAVE`) rather than several notes piled into the same octave. An unrecognized symbol throws a user-facing `Error`, the same convention as the import parsers. Once applied, the searched notes are ordinary selected notes — there is no persistent "this came from search" state, so adjusting them afterward is identical to having clicked them by hand.
+
 ## Chord detection
 
 `utils/chordDetection.js` wraps Tonal's `Chord.detect`.

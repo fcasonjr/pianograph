@@ -42,6 +42,12 @@ function HelpDialog() {
           <strong>Add chord</strong> to save it, and <strong>Clear keyboard</strong> to start the next one.
         </p>
         <p>
+          Or type a chord into the <strong>search box</strong> — a space and any capitalization are fine —
+          and press <strong>Search</strong> to select its notes for you, then adjust them by hand from
+          there. Tick <strong>Add to keyboard</strong> first to add the searched chord to what's already
+          selected instead of replacing it.
+        </p>
+        <p>
           <strong>MIDI keyboard</strong> (Chrome or Edge on a computer): notes stay selected after you let
           go, so you can play with both hands. By default the chord is added a moment after you lift all
           your fingers, and the keyboard clears for the next one; untick “Add chord when I lift my hands”
