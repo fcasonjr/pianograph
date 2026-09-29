@@ -134,12 +134,20 @@ function App() {
     savePreferences({ accidentals, midiAutoAdd: next })
   }
 
+  // Wipes both the keyboard and any leftover chord-search text/error, so the search box doesn't go
+  // stale next to an empty keyboard. Shared by the Clear keyboard button and the MIDI hands-free path.
+  function clearKeyboard() {
+    setClearSignal((n) => n + 1)
+    setChordSearchQuery('')
+    setChordSearchError('')
+  }
+
   // The MIDI keyboard's hands-free path (auto-add on release, sustain pedal): add the chord, then wipe the
   // keyboard so the next chord starts fresh. The Add chord button leaves the selection alone.
   function commitMidiChord() {
     if (selectedNotes.length === 0) return
     commitChord()
-    setClearSignal((n) => n + 1)
+    clearKeyboard()
   }
 
   function addSection() {
@@ -352,7 +360,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-secondary clear-keyboard-button"
-                  onClick={() => setClearSignal((n) => n + 1)}
+                  onClick={clearKeyboard}
                   disabled={selectedNotes.length === 0}
                 >
                   Clear keyboard
