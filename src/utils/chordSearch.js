@@ -4,12 +4,35 @@ import { Chord, Note } from 'tonal'
 // isn't meant to produce a final voicing, just a starting point to adjust by hand on the keyboard.
 const DEFAULT_START_OCTAVE = 3
 
-// Given a chord symbol (e.g. "Ebmaj7", "Gm7b5/Db"), returns its notes as sharp-spelled ids
-// ("D#3", "G3", ...), each one voiced above the last. Throws a user-facing Error if the symbol
-// isn't recognized.
+// Full words for common qualities, so typing them out ("Eb Major") works alongside the short chord-
+// symbol form ("Ebmaj") that Tonal expects. Order matters: "dominant" is dropped in front of a number
+// (the number alone already implies dominant, e.g. "9" is a dominant 9th — "dom9" isn't recognized) and
+// otherwise mapped to "dom" ("dominant" alone means a dominant 7th).
+const WORD_ALIASES = [
+  [/\bdominant\b\s*(?=\d)/gi, ''],
+  [/\bmajor\b/gi, 'maj'],
+  [/\bminor\b/gi, 'min'],
+  [/\bdiminished\b/gi, 'dim'],
+  [/\baugmented\b/gi, 'aug'],
+  [/\bsuspended\b/gi, 'sus'],
+  [/\bdominant\b/gi, 'dom'],
+]
+
+// Tolerates natural phrasing ("Eb Major 7th chord") in addition to plain chord-symbol notation
+// ("Ebmaj7"): spells out common quality words, drops a trailing "chord", and strips English ordinal
+// suffixes after a number ("7th" -> "7"). Chord symbols never contain spaces, so those are stripped last.
+function normalizeChordQuery(query) {
+  let text = query.replace(/\bchord\b/gi, '')
+  for (const [pattern, replacement] of WORD_ALIASES) text = text.replace(pattern, replacement)
+  text = text.replace(/(\d)(st|nd|rd|th)\b/gi, '$1')
+  return text.replace(/\s+/g, '')
+}
+
+// Given a chord symbol or name (e.g. "Ebmaj7", "Gm7b5/Db", "Eb Major 7th"), returns its notes as
+// sharp-spelled ids ("D#3", "G3", ...), each one voiced above the last. Throws a user-facing Error if
+// nothing is recognized.
 export function searchChord(query, startOctave = DEFAULT_START_OCTAVE) {
-  // Chord symbols don't contain spaces; stripping them tolerates input like "Eb Maj7".
-  const symbol = query.replace(/\s+/g, '')
+  const symbol = normalizeChordQuery(query)
   if (!symbol) throw new Error('Type a chord to search for.')
 
   const chord = Chord.get(symbol)

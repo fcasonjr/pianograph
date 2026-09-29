@@ -40,7 +40,9 @@ If the notes don't match a known chord, the display says **No chord match**. You
 
 **Clear keyboard** deselects all notes without touching your saved chords, so you can move on to the next chord without deselecting each note.
 
-**Search a chord.** Instead of clicking every note by hand, type a chord symbol — `Ebmaj7`, `Gm7b5/Db`, `Eb Maj7` with a space, any capitalization — into the search box and press **Search** (or Enter). Its notes are selected on the keyboard for you, voiced starting around the middle of the range. From there it's just like a chord you clicked in by hand: click any key to add or drop a note. Tick **Add to keyboard** first if you want the searched chord added to whatever's already selected, rather than replacing it — useful for playing a bass note yourself and searching the chord that goes over it. If the text isn't a chord Pianograph recognizes, it says so and leaves the keyboard as it was.
+**Search a chord.** Instead of clicking every note by hand, type a chord into the search box and press **Search** (or Enter). Its notes are selected on the keyboard for you, voiced starting around the middle of the range. From there it's just like a chord you clicked in by hand: click any key to add or drop a note. Tick **Add to keyboard** first if you want the searched chord added to whatever's already selected, rather than replacing it — useful for playing a bass note yourself and searching the chord that goes over it. If the text isn't a chord Pianograph recognizes, it says so and leaves the keyboard as it was.
+
+Spaces and capitalization never matter (`Eb Maj7` and `ebmaj7` are the same search), and both short chord-symbol notation and natural phrasing work: `Ebmaj7` or `Eb Major 7th`, `Cm7` or `C minor 7th chord`, `Bb7` or `Bb dominant 7`, `Gdim7` or `G diminished 7th`. Slash chords work too, for a chord over a specific bass note: `Gm7b5/Db`. What doesn't: numbers spelled out as words (`seventh` rather than `7` or `7th`) and chords the app can't otherwise name.
 
 ## Using a MIDI keyboard
 
