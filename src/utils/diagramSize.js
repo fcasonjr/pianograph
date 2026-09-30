@@ -2,7 +2,7 @@ import { START_OCTAVE } from '../constants'
 
 const MIN_OCTAVES = 2
 const MAX_KEY_WIDTH = 9
-const MAX_DIAGRAM_WIDTH = 150
+const MAX_DIAGRAM_WIDTH = 180
 
 function octaveOf(noteId) {
   return Number(noteId.match(/-?\d+$/)[0])
