@@ -75,7 +75,7 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 | **⧉** | Duplicates the chord right after itself. Handy when a chord returns later. |
 | **×** | Removes the chord. There is no undo. |
 | **§** | Starts a section just before this chord (see [Sections](#sections)). |
-| Number buttons and **− / +** | Set how many beats the chord lasts (see below). |
+| Number buttons and **− / +** | Set how many beats the chord lasts, in half-beat steps (see below). |
 | **\|:  :\|  1.  2.** | Repeat and ending marks (see [Repeats and endings](#repeats-and-endings)). |
 
 **Editing a chord you've already added.** Click the chord's name or its diagram on the card, and its notes load onto the keyboard above — the card gets a dashed outline so you can see which one you're editing. Add a bass note, drop the 5th, search a different voicing, anything you'd normally do while building a chord, then press **Save changes** to write it back into that same card. Its position, length, and any repeat marks stay exactly as they were — only the notes and name change. **Cancel** backs out without saving. Editing one card while already editing another just switches to the new one; nothing is lost, since nothing is saved until you press Save changes.
@@ -87,10 +87,12 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 A chord's **length is measured in beats**, and a measure is a fixed number of beats. So a measure can hold one long chord or several short ones.
 
 - New chords fill one full measure by default.
-- The number buttons on a card are one-click lengths: 1 beat, 2 beats, one measure, and two measures. Use **−** and **+** for anything else, up to 32 beats.
+- The number buttons on a card are one-click lengths: ½ beat, 1 beat, 2 beats, one measure, and two measures. **−** and **+** move in half-beat steps (so 1½ beats is two taps up from ½), up to 32 beats. Half-beats are for quick passing chords and anticipations; the lead sheet and playback both honor them.
 - Two chords of 2 beats each in 4/4 share one measure. On the lead sheet they sit side by side above the same measure.
 
 The **Time** menu next to the tempo sets the time signature for the whole song: 2/4, 3/4, 4/4, 5/4, or 6/4. When you change it, chords that filled exactly one measure are changed to fill one measure of the new length. Chords with any other length keep their lengths.
+
+**Changing the time signature partway through a song.** Some songs have a short or long bar in the middle, such as a single 2/4 bar among 4/4 ones. Each card has a **Meter** menu at the bottom: choose **2/4 from here** (or 3/4, 5/4, 6/4) on the first chord of that bar, and every bar from that chord on uses the new length. Then choose **4/4 from here** on the first chord *after* it to go back. The lead sheet prints the time signature on the staff at each change and puts the barlines in the right places. It carries over to the next row, and into the next section, until you change it again. The meter only affects the lead sheet's barlines; playback just follows each chord's length in beats, so set a chord in a 2/4 bar to 2 beats.
 
 ## Sections
 

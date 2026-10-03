@@ -83,7 +83,7 @@ The progression is one flat array of two kinds of entry, told apart by `type`:
 ```
 
 - `label` is the stored chord name string, so it is **recomputed** whenever the sharps/flats preference changes or a file is imported.
-- `beats` is the chord's length. The time signature is song-level state (`beatsPerMeasure`, the "N" in N/4), not part of any chord. A measure is not a chord: several short chords can share one.
+- `beats` is the chord's length, a multiple of `BEAT_STEP` (0.5) between 0.5 and `MAX_CHORD_BEATS`; `isValidBeats` in `utils/beats.js` is the single check used by `storage.js` and the JSON import, the card's −/+ step by `BEAT_STEP`, and MIDI import rounds to the nearest half-beat. The time signature is song-level state (`beatsPerMeasure`, the "N" in N/4), not part of any chord. A measure is not a chord: several short chords can share one. A chord can also carry an optional `meter` (a value from `TIME_SIGNATURE_OPTIONS`): a bar length that starts at that chord and holds until a later chord sets another. It is validated in `cleanMarks` like the repeat flags, so it travels through storage, import/export, and moves with the chord. `buildLeadSheetRows` resolves it into each measure's effective `meter` (carried across rows and sections, defaulting to the song-level `beatsPerMeasure`) and a `meterChange` flag; `LeadSheet.jsx`'s `barlinePositions` walks those to place barlines, and draws a time signature (HTML, like the repeat glyphs) where `meterChange` is set. Playback ignores it, since it only sums `beats`. It is a chord field rather than a separate marker entry for the same reason repeat marks are.
 - Repeat marks are flags on the chord rather than separate entries. Attaching them to a chord keeps them attached when the chord moves, and keeps reordering, duplication, and removal generic over `id`. `cleanMarks` in `utils/repeats.js` is the single place that validates these fields.
 - Sections and chords sit in the same array on purpose: `moveChord`, `duplicateChord`, and `removeChord` work on both without special cases. Code that must tell them apart (rendering, playback, export) checks `entry.type`.
 - `id`s come from `crypto.randomUUID()` and are regenerated on import.
@@ -267,7 +267,7 @@ The app is a static site. `npm run build` produces `dist/`; upload it to any sta
 
 **Change the octave range.** Edit `START_OCTAVE` and `OCTAVE_COUNT` in `constants.js`. The keyboard and diagrams both read from it. If the range moves outside C2–C6, add samples for it in `public/samples/salamander/` and the list in `audio.js`.
 
-**Add a time signature.** Add its beat count to `TIME_SIGNATURE_OPTIONS`. Time signatures are all N/4, so compound meters like 6/8 would need a change to how beats and barlines are counted.
+**Add a time signature.** Add its beat count to `TIME_SIGNATURE_OPTIONS`. Time signatures are all N/4, so compound meters like 6/8 would need a change to how beats and barlines are counted. The per-chord `meter` field uses the same list.
 
 **Change the piano sound.** Replace the files in `public/samples/salamander/` and update the note map in `audio.js`. Keep the license note and the credit line in the app footer if you keep the Salamander recordings.
 

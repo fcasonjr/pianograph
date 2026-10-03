@@ -69,6 +69,7 @@ function Progression({
             repeatStart={entry.repeatStart}
             repeatEnd={entry.repeatEnd}
             ending={entry.ending}
+            meter={entry.meter}
             onRemove={() => onRemove(entry.id)}
             onMoveLeft={() => onMove(entry.id, -1)}
             onMoveRight={() => onMove(entry.id, 1)}

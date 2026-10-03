@@ -56,8 +56,8 @@ function HelpDialog() {
 
         <h3>Arrange the progression</h3>
         <p>
-          Use ← → to reorder, ⧉ to copy a chord, and × to remove it. The number chips set how many beats a
-          chord lasts, so two short chords can share one measure. The time signature is next to Tempo.
+          Use ← → to reorder, ⧉ to copy a chord, and × to remove it. The number chips (and − / +, in half-beat steps) set how many beats a
+          chord lasts, so two short chords can share one measure. The time signature is next to Tempo; for a bar that differs from it (say, one 2/4 bar), use the Meter menu on the first chord of that bar and again on the chord after it to switch back.
         </p>
         <p>
           Click a chord's name or diagram on its card to <strong>edit it</strong> — its notes load onto

@@ -1,6 +1,7 @@
 import { Midi } from '@tonejs/midi'
 import { Note } from 'tonal'
 import { chordLabel } from './chordDetection'
+import { BEAT_STEP } from './beats'
 import { MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS, DEFAULT_BEATS_PER_MEASURE } from '../constants'
 
 function fail(message) {
@@ -34,7 +35,7 @@ export async function parseImportedMidi(file, accidentals) {
     // A chord lasts until the next one's attack; the final chord borrows the file's measure length,
     // since nothing after it bounds how long it should ring.
     const nextTick = clusters[index + 1]?.startTick ?? cluster.startTick + ppq * beatsPerMeasure
-    const beats = Math.min(MAX_CHORD_BEATS, Math.max(1, Math.round((nextTick - cluster.startTick) / ppq)))
+    const beats = Math.min(MAX_CHORD_BEATS, Math.max(BEAT_STEP, Math.round((nextTick - cluster.startTick) / ppq / BEAT_STEP) * BEAT_STEP))
     const noteIds = [...new Set(cluster.midiNotes)]
       .sort((a, b) => a - b)
       .map((midiNumber) => Note.fromMidiSharps(midiNumber))

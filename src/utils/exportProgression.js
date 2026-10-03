@@ -35,7 +35,7 @@ export function exportProgressionAsText(progression, title = '') {
     .map((entry) => {
       if (entry.type === 'section') return `-- ${entry.name} --`
       const marks = cleanMarks(entry)
-      return `${marks.repeatStart ? '|: ' : ''}${marks.ending ? `[${marks.ending}.] ` : ''}${entry.label}${marks.repeatEnd ? ' :|' : ''}`
+      return `${marks.meter ? `(${marks.meter}/4) ` : ''}${marks.repeatStart ? '|: ' : ''}${marks.ending ? `[${marks.ending}.] ` : ''}${entry.label}${marks.repeatEnd ? ' :|' : ''}`
     })
     .join('  |  ')
   const text = title.trim() ? `${title.trim()}\n\n${chords}` : chords

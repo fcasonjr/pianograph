@@ -3,6 +3,7 @@ import PianoDiagram from '../PianoDiagram/PianoDiagram'
 import { buildLeadSheetRows } from '../../utils/leadsheetLayout'
 import { endsRepeat } from '../../utils/repeats'
 import { diagramNaturalWidth } from '../../utils/diagramSize'
+import { DEFAULT_BEATS_PER_MEASURE } from '../../constants'
 import { TREBLE_CLEF_PATH } from './trebleClef'
 import {
   canShareImageFiles,
@@ -22,19 +23,27 @@ const MAX_MEASURES_PER_ROW = 4
 const MIN_DIAGRAM_SCALE = 0.8
 const CELL_PADDING = 12
 
-// Barlines sit on measure boundaries (every beatsPerMeasure beats from the row start),
-// not between chords, so several short chords can share one measure.
-function barlinePositions(totalBeats, beatsPerMeasure) {
+// Barlines sit on measure boundaries (every `meter` beats from the row start, where the meter is the
+// one in effect at the chord the barline falls in), not between chords, so several short chords can
+// share one measure and a 2/4 bar can sit among 4/4 ones.
+function barlinePositions(placed, totalBeats) {
   const xs = []
-  for (let x = 0; x < totalBeats; x += beatsPerMeasure) xs.push(x)
+  let x = 0
+  while (x < totalBeats) {
+    xs.push(x)
+    const here = placed.find((m) => m.start <= x && x < m.end)
+    x += here?.meter ?? DEFAULT_BEATS_PER_MEASURE
+  }
   xs.push(totalBeats)
   return xs
 }
 
 // How many beats a row holds: a whole number of measures, as many as fit at a legible width. The width
 // per beat is at least MIN_PX_PER_BEAT and grows when the row has short chords, so their diagrams stay large.
-function makeRowCapacity(contentWidth, beatsPerMeasure) {
+// A row mixing meters counts measures of its longest one.
+function makeRowCapacity(contentWidth, defaultMeter) {
   return (measures) => {
+    const beatsPerMeasure = Math.max(...measures.map((m) => m.meter ?? defaultMeter))
     if (contentWidth <= 0) return MAX_MEASURES_PER_ROW * beatsPerMeasure
     const pxPerBeat = Math.max(
       MIN_PX_PER_BEAT,
@@ -97,14 +106,12 @@ function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten
   return { status: current?.failed ? 'error' : 'preparing', blob: null }
 }
 
-function StaffRow({ row, beatsPerMeasure, impliedRepeatEndIds }) {
+function StaffRow({ row, impliedRepeatEndIds }) {
   const totalBeats = row.measures.reduce((sum, m) => sum + m.beats, 0) || 1
 
-  let cursor = 0
-  const placed = row.measures.map((measure) => {
-    const start = cursor
-    cursor += measure.beats
-    return { ...measure, start, end: cursor }
+  const placed = row.measures.map((measure, i) => {
+    const start = row.measures.slice(0, i).reduce((sum, m) => sum + m.beats, 0)
+    return { ...measure, start, end: start + measure.beats }
   })
 
   // Repeat glyphs sit at chord boundaries and replace the plain barline at the same position. A first
@@ -117,7 +124,7 @@ function StaffRow({ row, beatsPerMeasure, impliedRepeatEndIds }) {
     if (m.repeatEnd || impliedRepeatEndIds.has(m.id)) repeatMarks.push({ kind: 'end', x: m.end })
   })
   const repeatXs = new Set(repeatMarks.map((mark) => mark.x))
-  const barlineXs = barlinePositions(totalBeats, beatsPerMeasure).filter((x) => !repeatXs.has(x))
+  const barlineXs = barlinePositions(placed, totalBeats).filter((x) => !repeatXs.has(x))
 
   // Contiguous chords in the same ending share one bracket.
   const endings = []
@@ -211,6 +218,19 @@ function StaffRow({ row, beatsPerMeasure, impliedRepeatEndIds }) {
               </span>
             </div>
           ))}
+          {placed
+            .filter((m) => m.meterChange)
+            .map((m) => (
+              <div
+                key={`meter-${m.id}`}
+                className="time-signature"
+                style={{ left: pct(m.start), marginLeft: m.repeatStart ? 20 : 6 }}
+                aria-label={`${m.meter}/4 time`}
+              >
+                <span>{m.meter}</span>
+                <span>4</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -224,7 +244,10 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
     () => makeRowCapacity(contentWidth, beatsPerMeasure),
     [contentWidth, beatsPerMeasure],
   )
-  const rows = useMemo(() => buildLeadSheetRows(progression, rowCapacity), [progression, rowCapacity])
+  const rows = useMemo(
+    () => buildLeadSheetRows(progression, rowCapacity, beatsPerMeasure),
+    [progression, rowCapacity, beatsPerMeasure],
+  )
   // A first ending's own last chord always closes its repeat when played (see utils/repeats.js), even
   // without an explicit `:|` — computed here, once, over the real progression (not a row's measures, so
   // an ending that wraps onto a second printed row is still identified correctly either way).
@@ -303,7 +326,6 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
                   <StaffRow
                     key={row.measures[0]?.id ?? `label-${index}`}
                     row={row}
-                    beatsPerMeasure={beatsPerMeasure}
                     impliedRepeatEndIds={impliedRepeatEndIds}
                   />
                 ))}

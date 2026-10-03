@@ -1,6 +1,6 @@
 import PianoDiagram from '../PianoDiagram/PianoDiagram'
-import { beatPresets } from '../../utils/beats'
-import { MAX_CHORD_BEATS } from '../../constants'
+import { BEAT_STEP, beatPresets, formatBeats } from '../../utils/beats'
+import { MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS } from '../../constants'
 import './ChordCard.css'
 
 function ChordCard({
@@ -15,6 +15,7 @@ function ChordCard({
   repeatStart,
   repeatEnd,
   ending,
+  meter,
   onRemove,
   onMoveLeft,
   onMoveRight,
@@ -56,10 +57,10 @@ function ChordCard({
             type="button"
             className={`beat-preset ${beats === preset ? 'active' : ''}`}
             aria-pressed={beats === preset}
-            aria-label={`Set ${label} to ${preset} beat${preset === 1 ? '' : 's'}`}
+            aria-label={`Set ${label} to ${formatBeats(preset)} beat${preset <= 1 ? '' : 's'}`}
             onClick={() => onSetBeats(preset)}
           >
-            {preset}
+            {formatBeats(preset)}
           </button>
         ))}
       </div>
@@ -67,18 +68,18 @@ function ChordCard({
         <button
           type="button"
           className="icon-btn"
-          onClick={() => onSetBeats(Math.max(1, beats - 1))}
+          onClick={() => onSetBeats(Math.max(BEAT_STEP, beats - BEAT_STEP))}
           aria-label={`Decrease beats for ${label}`}
         >
           −
         </button>
         <span>
-          {beats} beat{beats === 1 ? '' : 's'}
+          {formatBeats(beats)} beat{beats <= 1 ? '' : 's'}
         </span>
         <button
           type="button"
           className="icon-btn"
-          onClick={() => onSetBeats(Math.min(MAX_CHORD_BEATS, beats + 1))}
+          onClick={() => onSetBeats(Math.min(MAX_CHORD_BEATS, beats + BEAT_STEP))}
           aria-label={`Increase beats for ${label}`}
         >
           +
@@ -119,6 +120,20 @@ function ChordCard({
           </button>
         ))}
       </div>
+      <select
+        className="input meter-select"
+        aria-label={`Time signature starting at ${label}`}
+        title="Change the bar length from this chord on (for a short or long bar in the lead sheet)"
+        value={meter ?? ''}
+        onChange={(event) => onSetMarks({ meter: event.target.value ? Number(event.target.value) : null })}
+      >
+        <option value="">Meter: no change</option>
+        {TIME_SIGNATURE_OPTIONS.map((n) => (
+          <option key={n} value={n}>
+            Meter: {n}/4 from here
+          </option>
+        ))}
+      </select>
       <div className="chord-card-actions">
         <button
           type="button"

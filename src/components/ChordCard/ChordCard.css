@@ -93,7 +93,7 @@
 
 @media (pointer: coarse) {
   .beat-preset {
-    min-width: 40px;
+    min-width: 36px;
     height: 40px;
   }
 }
@@ -126,4 +126,17 @@
 
 .chord-card-play {
   color: var(--accent);
+}
+
+.meter-select {
+  width: 100%;
+  height: 30px;
+  padding: 0 6px;
+  font-size: 13px;
+}
+
+@media (pointer: coarse) {
+  .meter-select {
+    height: 40px;
+  }
 }

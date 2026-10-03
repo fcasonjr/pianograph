@@ -2,7 +2,8 @@ import { Note } from 'tonal'
 import { chordLabel } from './chordDetection'
 import { cleanMarks } from './repeats'
 import { listSections } from './sections'
-import { DEFAULT_BEATS_PER_MEASURE, MAX_CHORD_BEATS, TIME_SIGNATURE_OPTIONS } from '../constants'
+import { isValidBeats } from './beats'
+import { DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
 
 const MAX_TITLE_LENGTH = 120
 
@@ -30,10 +31,7 @@ function parseEntry(raw, index, accidentals, defaultBeats) {
       }),
     ),
   ]
-  const beats =
-    Number.isInteger(raw.beats) && raw.beats >= 1 && raw.beats <= MAX_CHORD_BEATS
-      ? raw.beats
-      : defaultBeats
+  const beats = isValidBeats(raw.beats) ? raw.beats : defaultBeats
 
   // Recompute the label rather than trusting the file, so it matches the current sharps/flats setting.
   return {

@@ -1,5 +1,6 @@
 import { DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
 import { cleanMarks } from './repeats'
+import { isValidBeats } from './beats'
 
 const STORAGE_KEY = 'pianograph:progression'
 
@@ -12,7 +13,7 @@ function normalizeEntry(entry) {
     type: 'chord',
     label: entry.label,
     notes: entry.notes ?? [],
-    beats: entry.beats ?? 4,
+    beats: isValidBeats(entry.beats) ? entry.beats : 4,
     ...cleanMarks(entry),
   }
 }

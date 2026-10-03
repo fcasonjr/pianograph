@@ -1,5 +1,9 @@
+import { TIME_SIGNATURE_OPTIONS } from '../constants'
+
 // Chords carry optional repeat marks: `repeatStart` (a |: before the chord), `repeatEnd`
-// (a :| after it) and `ending` (1 or 2, inside a first/second ending).
+// (a :| after it) and `ending` (1 or 2, inside a first/second ending). They can also carry `meter`
+// (N for N/4): a new bar length that starts at this chord and holds until another chord sets one.
+// Only the lead sheet's barlines care; playback just adds up beats.
 
 // A chord closes a repeat block if it's explicitly marked `:|`, or it's the last chord of a first
 // ending — a first ending always loops back at its own end, even if `:|` wasn't separately toggled,
@@ -71,5 +75,6 @@ export function cleanMarks(raw) {
   if (raw?.repeatStart === true) marks.repeatStart = true
   if (raw?.repeatEnd === true) marks.repeatEnd = true
   if (raw?.ending === 1 || raw?.ending === 2) marks.ending = raw.ending
+  if (TIME_SIGNATURE_OPTIONS.includes(raw?.meter)) marks.meter = raw.meter
   return marks
 }
