@@ -7,7 +7,7 @@ Build piano chords by clicking keys (or playing a MIDI keyboard), arrange them i
 - **Chord builder.** Click keys across four octaves (C2–B5), so two-handed voicings with a low bass note fit. The chord name is detected as you play (`Cmaj7`, `Dm7 / F6/D`, slash chords and jazz voicings included), with a Sharps/Flats setting for spelling. Or type a chord symbol into the search box to select its notes for you, then adjust by hand from there.
 - **Sound.** Real piano samples for previewing notes, chords, and the whole progression at a tempo you choose, with Pause/Resume and Stop for playback. If the samples can't load, it falls back to a synth.
 - **MIDI keyboard input** (Chrome or Edge on a computer). Notes stay selected after you let go, so both hands can play a chord. The chord is added automatically a moment after you lift your hands, or when you press a sustain pedal.
-- **Progression.** Reorder, copy, and remove chords; edit an already-added chord's notes right on its card; set how many beats each lasts (several short chords can share a measure); choose a 2/4–6/4 time signature; add section labels (A, B, Bridge…) and repeat signs with first and second endings.
+- **Progression.** Reorder, copy, and remove chords; edit an already-added chord's notes right on its card; set how long each lasts in half-beat steps (several short chords can share a measure); choose a 2/4–6/4 time signature, and change it mid-song for a short or long bar; add section labels (A, B, Bridge…) and repeat signs with first and second endings.
 - **Song form.** Play sections in any order — A, B1, A, B2, A — without retyping or duplicating chords, and play from any section to the end. The order is saved with the song.
 - **Lead sheet.** Prints to PDF from the browser, downloads as a PNG, or uses the native share sheet on iPad and phone. An optional handwritten font for the chord names gives it more of a classic hand-copied fake-book feel.
 - **Save and move songs.** Work is saved automatically in the browser. Save as file / Open file to back up, move a song to another device, or keep variations as their own files — export it as plain text too, if you just need a chart to paste elsewhere.
@@ -22,7 +22,7 @@ npm install
 npm run dev      # http://localhost:5173
 ```
 
-Other commands: `npm run build` (production build to `dist/`), `npm run preview` (serve that build locally), and `npm run lint`. There is no test runner.
+Other commands: `npm run build` (production build to `dist/`), `npm run preview` (serve that build locally), `npm run lint`, and `npm test` (unit tests for the layout and beat utilities).
 
 ## Notes
 

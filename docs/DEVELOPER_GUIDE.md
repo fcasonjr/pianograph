@@ -242,7 +242,7 @@ Printing hides chrome with the `.no-print` class and calls `window.print()`; the
 
 ## Testing and verification
 
-There is no test runner, and no committed tests. Behavior has been checked with throwaway [Playwright](https://playwright.dev) scripts run against `npm run dev` (for example: chord detection, repeats, layout geometry, MIDI, PNG export). If you write similar scripts:
+`npm test` runs Vitest unit tests for the pure utilities (`src/utils/layout.test.js`: lead sheet rows and meter, `cleanMarks`, beat helpers); there are no component tests. UI behavior has been checked with throwaway [Playwright](https://playwright.dev) scripts run against `npm run dev` (for example: chord detection, repeats, layout geometry, MIDI, PNG export). If you write similar scripts:
 
 - Piano keys are buttons with `aria-label="C4"`.
 - Seed a song by setting the `localStorage` keys above in `addInitScript`.
