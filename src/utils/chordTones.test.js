@@ -16,6 +16,10 @@ describe('chordToneLabels', () => {
     expect(nums(['C3', 'D#3', 'G3', 'A#3', 'D4'])).toMatchObject({ 'D#3': 'b3', 'A#3': 'b7', D4: '9' })
   })
 
+  it('labels every note of a chord whose Tonal type name is empty (7#5)', () => {
+    expect(nums(['A#3', 'D4', 'F#4', 'G#4'])).toEqual({ 'A#3': '1', D4: '3', 'F#4': '#5', 'G#4': 'b7' })
+  })
+
   it('shows nothing for an unrecognized cluster', () => {
     expect(chordToneLabels(['C4', 'C#4', 'D4'], 'numbers').size).toBe(0)
   })

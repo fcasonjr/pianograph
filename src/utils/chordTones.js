@@ -11,12 +11,15 @@ function intervalLabel(intervalName) {
 const pitchClass = (noteId) => ((Note.midi(noteId) % 12) + 12) % 12
 
 // Tonal lists every reading of a cluster, bass-first: E-G-C comes back as Em#5 before C/E. Keep the first
-// reading unless it needs an augmented interval (#5, #9, ...) that another reading avoids, so common
-// inversions number from the root the user would expect.
+// reading (it is the name the chord is shown under) unless a later *slash* reading avoids an augmented
+// interval the first one needs, so common inversions number from the root the user would expect. Only slash
+// readings may take over: swapping in another root-position name (7#5 for 7b13) would disagree with the label.
 function pickReading(names) {
   const augmented = (name) =>
-    Chord.get(name).intervals.filter((i) => Interval.get(i).q === 'A').length
-  return names.reduce((best, name) => (best === undefined || augmented(name) < augmented(best) ? name : best), undefined)
+    Chord.get(name.split('/')[0]).intervals.filter((i) => Interval.get(i).q === 'A').length
+  const [first] = names
+  if (first === undefined) return undefined
+  return names.find((name) => name.includes('/') && augmented(name) < augmented(first)) ?? first
 }
 
 // Map of note id -> label for the notes of one chord, or an empty map when there is nothing to show.
@@ -36,9 +39,9 @@ export function chordToneLabels(noteIds, mode, accidentals = 'sharps') {
 
   const name = pickReading(detectChord(noteIds, accidentals))
   if (!name) return labels
-  const { tonic, type } = Chord.get(name)
-  // Rebuild from the type: a slash chord's own interval list is measured from its bass, not its root.
-  const { intervals } = Chord.getChord(type, tonic)
+  // Drop any slash bass first: a slash chord's own interval list is measured from its bass, not its root.
+  // (Not rebuilt from `type`: Tonal leaves it empty for some chords, e.g. 7#5, which would read as a triad.)
+  const { tonic, intervals } = Chord.get(name.split('/')[0])
   const rootPc = Note.chroma(tonic)
   const byPitchClass = new Map(intervals.map((i) => [(rootPc + Interval.semitones(i)) % 12, i]))
   for (const id of noteIds) {
