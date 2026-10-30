@@ -455,7 +455,12 @@ function App() {
       </header>
 
       {view === 'leadsheet' ? (
-        <LeadSheet progression={progression} title={title} beatsPerMeasure={beatsPerMeasure} />
+        <LeadSheet
+          progression={progression}
+          title={title}
+          beatsPerMeasure={beatsPerMeasure}
+          accidentals={accidentals}
+        />
       ) : (
         <>
           <section className="panel compose-panel" ref={composePanelRef}>

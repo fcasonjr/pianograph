@@ -47,3 +47,10 @@ export function chordToneLabels(noteIds, mode, accidentals = 'sharps') {
   }
   return labels
 }
+
+// The labels as one line of text, low note to high, each distinct label once ("1 3 5 b7"), or '' for none.
+export function chordToneText(noteIds, mode, accidentals = 'sharps') {
+  const labels = chordToneLabels(noteIds, mode, accidentals)
+  const ordered = [...noteIds].sort((a, b) => Note.midi(a) - Note.midi(b)).map((id) => labels.get(id))
+  return [...new Set(ordered.filter(Boolean))].join(' ')
+}

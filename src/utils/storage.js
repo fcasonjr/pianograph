@@ -148,3 +148,24 @@ export function saveHandwrittenChords(enabled) {
     // best-effort, same as saveProgression
   }
 }
+
+const SHEET_TONES_KEY = 'pianograph:sheetTones'
+
+// The lead sheet's chord-tone line is its own setting, apart from the builder's key labels: a printed
+// chart and the on-screen keyboard are often wanted differently.
+export function loadSheetTones() {
+  try {
+    const stored = localStorage.getItem(SHEET_TONES_KEY)
+    return CHORD_LABEL_MODES.includes(stored) ? stored : 'off'
+  } catch {
+    return 'off'
+  }
+}
+
+export function saveSheetTones(mode) {
+  try {
+    localStorage.setItem(SHEET_TONES_KEY, mode)
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}

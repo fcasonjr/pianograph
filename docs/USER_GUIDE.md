@@ -39,7 +39,9 @@ If the notes don't match a known chord, the display says **No chord match**. You
 
 **Sharps or flats.** The **♯ Sharps / ♭ Flats** switch in the header decides how chord names are spelled (`D#maj7` or `Ebmaj7`). Changing it renames every chord already in your song.
 
-**Key labels.** The **No labels / 1 3 5 / C E G** switch in the header prints a label on each highlighted key, on the keyboard and on the chord cards' small diagrams. *1 3 5* shows each note's chord-tone number from the detected root (so C/E still marks C as 1 and E as 3, and extensions read 9, 11, 13); notes that don't form a recognized chord get no numbers. *C E G* shows note names, spelled by your sharps/flats choice. The lead sheet is unchanged. Your choice is remembered.
+**Key labels.** The **No labels / 1 3 5 / C E G** switch in the header prints a label on each highlighted key, on the keyboard and on the chord cards' small diagrams. *1 3 5* shows each note's chord-tone number from the detected root (so C/E still marks C as 1 and E as 3, and extensions read 9, 11, 13); notes that don't form a recognized chord get no numbers. *C E G* shows note names, spelled by your sharps/flats choice. Your choice is remembered.
+
+**Chord tones on the lead sheet.** The lead sheet toolbar has its own **Chord tones** menu (Off / Numbers / Note names). It prints one line under each chord symbol, low note to high (`1 5 3 7`), and appears in the PNG and print. It is separate from the header's key labels, and is remembered.
 
 **Clear keyboard** deselects all notes and empties the search box, without touching your saved chords, so you can move on to the next chord without deselecting each note by hand.
 

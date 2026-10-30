@@ -11,7 +11,13 @@ import {
   renderSheetPng,
   shareSheetPng,
 } from '../../utils/sheetImage'
-import { loadHandwrittenChords, saveHandwrittenChords } from '../../utils/storage'
+import { chordToneText } from '../../utils/chordTones'
+import {
+  loadHandwrittenChords,
+  loadSheetTones,
+  saveHandwrittenChords,
+  saveSheetTones,
+} from '../../utils/storage'
 import './LeadSheet.css'
 
 const STAFF_LINE_YS = [2, 3, 4, 5, 6]
@@ -77,10 +83,10 @@ function useContentWidth() {
 // called straight from a tap: iOS only allows share() during a user gesture. Whatever the sheet depends
 // on gets a fresh `version`; a result only counts if it was rendered for the current version, which
 // makes "preparing" derived state rather than something set inside the effect.
-function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten) {
+function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten, toneKey) {
   const version = useMemo(
-    () => ({ rows, title, contentWidth, handwritten }),
-    [rows, title, contentWidth, handwritten],
+    () => ({ rows, title, contentWidth, handwritten, toneKey }),
+    [rows, title, contentWidth, handwritten, toneKey],
   )
   const [result, setResult] = useState({ version: null, blob: null, failed: false })
 
@@ -106,7 +112,7 @@ function useSheetImage(sheetRef, enabled, rows, title, contentWidth, handwritten
   return { status: current?.failed ? 'error' : 'preparing', blob: null }
 }
 
-function StaffRow({ row, impliedRepeatEndIds }) {
+function StaffRow({ row, impliedRepeatEndIds, toneMode, accidentals }) {
   const totalBeats = row.measures.reduce((sum, m) => sum + m.beats, 0) || 1
 
   const placed = row.measures.map((measure, i) => {
@@ -165,6 +171,9 @@ function StaffRow({ row, impliedRepeatEndIds }) {
                 style={{ flex: `${measure.beats} ${measure.beats} ${measure.beats * 30}px` }}
               >
                 <div className="leadsheet-chord-name">{primaryName(measure.label)}</div>
+                {toneMode !== 'off' && (
+                  <div className="leadsheet-tones">{chordToneText(measure.notes, toneMode, accidentals)}</div>
+                )}
                 <PianoDiagram notes={measure.notes} />
               </div>
             ))}
@@ -238,7 +247,7 @@ function StaffRow({ row, impliedRepeatEndIds }) {
   )
 }
 
-function LeadSheet({ progression, title, beatsPerMeasure }) {
+function LeadSheet({ progression, title, beatsPerMeasure, accidentals }) {
   const [sheetRef, contentWidth] = useContentWidth()
   const rowCapacity = useMemo(
     () => makeRowCapacity(contentWidth, beatsPerMeasure),
@@ -262,7 +271,21 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
   )
   const [canShare] = useState(() => canShareImageFiles())
   const [handwritten, setHandwritten] = useState(() => loadHandwrittenChords())
-  const image = useSheetImage(sheetRef, rows.length > 0, rows, title, contentWidth, handwritten)
+  const [toneMode, setToneMode] = useState(() => loadSheetTones())
+  const image = useSheetImage(
+    sheetRef,
+    rows.length > 0,
+    rows,
+    title,
+    contentWidth,
+    handwritten,
+    `${toneMode}:${accidentals}`,
+  )
+
+  function changeToneMode(next) {
+    setToneMode(next)
+    saveSheetTones(next)
+  }
 
   function changeHandwritten(next) {
     setHandwritten(next)
@@ -280,6 +303,18 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
               onChange={(event) => changeHandwritten(event.target.checked)}
             />
             Handwritten chord names
+          </label>
+          <label className="leadsheet-tones-select">
+            Chord tones
+            <select
+              className="input"
+              value={toneMode}
+              onChange={(event) => changeToneMode(event.target.value)}
+            >
+              <option value="off">Off</option>
+              <option value="numbers">Numbers (1 3 5)</option>
+              <option value="names">Note names</option>
+            </select>
           </label>
           <span className="leadsheet-image-status" role="status">
             {image.status === 'preparing' && 'Preparing image…'}
@@ -327,6 +362,8 @@ function LeadSheet({ progression, title, beatsPerMeasure }) {
                     key={row.measures[0]?.id ?? `label-${index}`}
                     row={row}
                     impliedRepeatEndIds={impliedRepeatEndIds}
+                    toneMode={toneMode}
+                    accidentals={accidentals}
                   />
                 ))}
               </div>

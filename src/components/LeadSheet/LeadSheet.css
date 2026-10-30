@@ -38,6 +38,20 @@
   accent-color: var(--accent);
 }
 
+.leadsheet-tones-select {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.leadsheet-tones-select .input {
+  width: auto;
+  padding: 4px 8px;
+  font-size: 13px;
+}
+
 .leadsheet-image-status {
   margin-right: auto;
   font-size: 13px;
@@ -147,6 +161,16 @@
   line-height: 1.2;
   text-align: center;
   color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+/* One line of chord-tone numbers or note names under the chord symbol; plain text, so it survives the PNG. */
+.leadsheet-tones {
+  max-width: 100%;
+  font-size: 11px;
+  line-height: 1.2;
+  text-align: center;
+  color: var(--text);
   overflow-wrap: anywhere;
 }
 

@@ -164,7 +164,7 @@ Notes:
 
 - Notes are sorted low to high first, because Tonal treats the first note as the bass and click order would otherwise change slash-chord names.
 - `assumePerfectFifth: true` lets voicings that omit the 5th (common in jazz) still match.
-- Key labels (`utils/chordTones.js`) number notes from the detected root using `Chord.getChord(type, tonic)` (a slash chord's own interval list is measured from its bass); an unrecognized cluster gets no numbers, and the lead sheet shows no labels.
+- Key labels (`utils/chordTones.js`) number notes from the detected root using `Chord.getChord(type, tonic)` (a slash chord's own interval list is measured from its bass); an unrecognized cluster gets no numbers, the lead sheet's diagrams show no labels, but it prints a `chordToneText` line under each chord name, controlled by its own `pianograph:sheetTones` setting.
 - Note ids are sharp-spelled, so they are respelled for the flats preference (`Note.fromMidi` versus `fromMidiSharps`) before detection.
 - `chordLabel` is the single formatter for both the live display and each saved chord's label: empty selection, a single note, unrecognized notes ("No chord match"), or the detected names joined with ` / `.
 

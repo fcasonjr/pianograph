@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chordToneLabels } from './chordTones'
+import { chordToneLabels, chordToneText } from './chordTones'
 
 const nums = (notes) => Object.fromEntries(chordToneLabels(notes, 'numbers'))
 
@@ -22,5 +22,15 @@ describe('chordToneLabels', () => {
 
   it('names notes without octaves, respelled for flats', () => {
     expect(Object.fromEntries(chordToneLabels(['A#3', 'D4'], 'names', 'flats'))).toEqual({ 'A#3': 'Bb', D4: 'D' })
+  })
+})
+
+describe('chordToneText', () => {
+  it('lists labels low to high, each once', () => {
+    expect(chordToneText(['G3', 'C3', 'E4', 'C4'], 'numbers')).toBe('1 5 3')
+  })
+
+  it('is empty when nothing is labelled', () => {
+    expect(chordToneText(['C4', 'C#4', 'D4'], 'numbers')).toBe('')
   })
 })
