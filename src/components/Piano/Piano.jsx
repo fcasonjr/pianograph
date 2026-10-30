@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { generateKeys } from '../../utils/pianoKeys'
 import { START_OCTAVE, OCTAVE_COUNT } from '../../constants'
 import { useMidiInput } from '../../hooks/useMidiInput'
+import { chordToneLabels } from '../../utils/chordTones'
 import { previewNote, startNote, stopNote } from '../../utils/audio'
 import './Piano.css'
 
@@ -13,6 +14,8 @@ function Piano({
   startOctave = START_OCTAVE,
   octaveCount = OCTAVE_COUNT,
   onNotesChange,
+  chordLabels = 'off',
+  accidentals = 'sharps',
   clearSignal = 0,
   applySignal = 0,
   applyNotes = null,
@@ -31,6 +34,11 @@ function Piano({
   const { whiteKeys, blackKeys } = useMemo(
     () => generateKeys(startOctave, octaveCount),
     [startOctave, octaveCount],
+  )
+
+  const toneLabels = useMemo(
+    () => chordToneLabels(Array.from(activeNotes), chordLabels, accidentals),
+    [activeNotes, chordLabels, accidentals],
   )
 
   const scrollRef = useRef(null)
@@ -158,7 +166,11 @@ function Piano({
               aria-pressed={activeNotes.has(key.id)}
               aria-label={key.id}
             >
-              {key.note === 'C' && <span className="key-label">{key.id}</span>}
+              {toneLabels.has(key.id) ? (
+                <span className="tone-label">{toneLabels.get(key.id)}</span>
+              ) : (
+                key.note === 'C' && <span className="key-label">{key.id}</span>
+              )}
             </button>
           ))}
           {blackKeys.map((key) => (
@@ -170,7 +182,9 @@ function Piano({
               onClick={() => toggleNote(key.id)}
               aria-pressed={activeNotes.has(key.id)}
               aria-label={key.id}
-            />
+            >
+              {toneLabels.has(key.id) && <span className="tone-label">{toneLabels.get(key.id)}</span>}
+            </button>
           ))}
         </div>
       </div>

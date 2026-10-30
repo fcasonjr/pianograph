@@ -42,6 +42,7 @@ function App() {
   const [sectionName, setSectionName] = useState('')
   const [view, setView] = useState('builder')
   const [accidentals, setAccidentals] = useState(() => loadPreferences().accidentals)
+  const [chordLabels, setChordLabels] = useState(() => loadPreferences().chordLabels)
   const [midiAutoAdd, setMidiAutoAdd] = useState(() => loadPreferences().midiAutoAdd)
   const [title, setTitle] = useState(() => loadTitle())
   const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
@@ -101,7 +102,7 @@ function App() {
 
   function changeAccidentals(next) {
     setAccidentals(next)
-    savePreferences({ accidentals: next, midiAutoAdd })
+    savePreferences({ accidentals: next, midiAutoAdd, chordLabels })
     setProgression((prev) =>
       prev.map((entry) =>
         entry.type === 'section' ? entry : { ...entry, label: chordLabel(entry.notes, next) },
@@ -166,7 +167,12 @@ function App() {
 
   function changeMidiAutoAdd(next) {
     setMidiAutoAdd(next)
-    savePreferences({ accidentals, midiAutoAdd: next })
+    savePreferences({ accidentals, midiAutoAdd: next, chordLabels })
+  }
+
+  function changeChordLabels(next) {
+    setChordLabels(next)
+    savePreferences({ accidentals, midiAutoAdd, chordLabels: next })
   }
 
   // Wipes both the keyboard and any leftover chord-search text/error, so the search box doesn't go
@@ -403,6 +409,27 @@ function App() {
               ♭ Flats
             </button>
           </div>
+          <div className="tabs" role="radiogroup" aria-label="Key labels">
+            {[
+              ['off', 'No labels'],
+              ['numbers', '1 3 5'],
+              ['names', 'C E G'],
+            ].map(([mode, text]) => (
+              <button
+                key={mode}
+                type="button"
+                role="radio"
+                aria-checked={chordLabels === mode}
+                className={`tab ${chordLabels === mode ? 'active' : ''}`}
+                onClick={() => changeChordLabels(mode)}
+                title={
+                  { off: 'No key labels', numbers: 'Label keys with chord-tone numbers', names: 'Label keys with note names' }[mode]
+                }
+              >
+                {text}
+              </button>
+            ))}
+          </div>
           <div className="tabs" role="tablist" aria-label="View">
             <button
               type="button"
@@ -490,6 +517,8 @@ function App() {
             {chordSearchError && <p className="chord-search-error">{chordSearchError}</p>}
             <Piano
               onNotesChange={setSelectedNotes}
+              chordLabels={chordLabels}
+              accidentals={accidentals}
               clearSignal={clearSignal}
               applySignal={applySignal}
               applyNotes={applyPayload.notes}
@@ -683,6 +712,8 @@ function App() {
               onStartSection={startSectionBefore}
               onRenameSection={renameSection}
               beatsPerMeasure={beatsPerMeasure}
+              chordLabels={chordLabels}
+              accidentals={accidentals}
               onPlayChord={handlePlayChord}
               playDisabled={playbackStatus !== 'stopped'}
               playingChordId={playingChordId}

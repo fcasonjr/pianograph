@@ -97,7 +97,7 @@ Everything persists to `localStorage` on every change, with all reads and writes
 | `pianograph:progression` | The entry array. |
 | `pianograph:title` | Song title. |
 | `pianograph:beatsPerMeasure` | 2–6. |
-| `pianograph:preferences` | `{ accidentals: 'sharps' \| 'flats', midiAutoAdd: boolean }`. |
+| `pianograph:preferences` | `{ accidentals: 'sharps' \| 'flats', midiAutoAdd: boolean, chordLabels: 'off' \| 'numbers' \| 'names' }`. |
 | `pianograph:playOrder` | Song form: an array of section ids (see [Song form](#song-form)). |
 | `pianograph:handwrittenChords` | `'true'` or `'false'`; the lead sheet's chord-name font. |
 
@@ -164,6 +164,7 @@ Notes:
 
 - Notes are sorted low to high first, because Tonal treats the first note as the bass and click order would otherwise change slash-chord names.
 - `assumePerfectFifth: true` lets voicings that omit the 5th (common in jazz) still match.
+- Key labels (`utils/chordTones.js`) number notes from the detected root using `Chord.getChord(type, tonic)` (a slash chord's own interval list is measured from its bass); an unrecognized cluster gets no numbers, and the lead sheet shows no labels.
 - Note ids are sharp-spelled, so they are respelled for the flats preference (`Note.fromMidi` versus `fromMidiSharps`) before detection.
 - `chordLabel` is the single formatter for both the live display and each saved chord's label: empty selection, a single note, unrecognized notes ("No chord match"), or the detected names joined with ` / `.
 

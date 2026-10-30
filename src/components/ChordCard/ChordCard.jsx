@@ -8,6 +8,8 @@ function ChordCard({
   notes,
   beats,
   beatsPerMeasure,
+  chordLabels,
+  accidentals,
   startsSection,
   onStartSection,
   onSetBeats,
@@ -48,7 +50,7 @@ function ChordCard({
         aria-label={`Edit ${label}`}
       >
         <span className="chord-card-name">{label}</span>
-        <PianoDiagram notes={notes} />
+        <PianoDiagram notes={notes} labelMode={chordLabels} accidentals={accidentals} />
       </button>
       <div className="beat-presets" role="group" aria-label={`Length of ${label}`}>
         {beatPresets(beatsPerMeasure).map((preset) => (

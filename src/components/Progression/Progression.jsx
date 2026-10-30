@@ -4,6 +4,8 @@ import './Progression.css'
 
 function Progression({
   chords,
+  chordLabels,
+  accidentals,
   onRemove,
   onMove,
   onDuplicate,
@@ -62,6 +64,8 @@ function Progression({
             notes={entry.notes}
             beats={entry.beats}
             beatsPerMeasure={beatsPerMeasure}
+            chordLabels={chordLabels}
+            accidentals={accidentals}
             startsSection={chords[index - 1]?.type === 'section'}
             onStartSection={() => onStartSection(entry.id)}
             onSetBeats={(beats) => onUpdate(entry.id, { beats })}

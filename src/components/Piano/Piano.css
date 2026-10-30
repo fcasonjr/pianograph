@@ -108,6 +108,21 @@
   pointer-events: none;
 }
 
+.tone-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e1065;
+  pointer-events: none;
+}
+
+.key-black .tone-label {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  color: #fff;
+}
+
 .key-black {
   position: absolute;
   top: 0;

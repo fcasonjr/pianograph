@@ -1,4 +1,4 @@
-import { DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
+import { CHORD_LABEL_MODES, DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
 import { cleanMarks } from './repeats'
 import { isValidBeats } from './beats'
 
@@ -46,9 +46,10 @@ export function loadPreferences() {
     return {
       accidentals: parsed?.accidentals === 'flats' ? 'flats' : 'sharps',
       midiAutoAdd: parsed?.midiAutoAdd !== false,
+      chordLabels: CHORD_LABEL_MODES.includes(parsed?.chordLabels) ? parsed.chordLabels : 'off',
     }
   } catch {
-    return { accidentals: 'sharps', midiAutoAdd: true }
+    return { accidentals: 'sharps', midiAutoAdd: true, chordLabels: 'off' }
   }
 }
 

@@ -39,6 +39,8 @@ If the notes don't match a known chord, the display says **No chord match**. You
 
 **Sharps or flats.** The **♯ Sharps / ♭ Flats** switch in the header decides how chord names are spelled (`D#maj7` or `Ebmaj7`). Changing it renames every chord already in your song.
 
+**Key labels.** The **No labels / 1 3 5 / C E G** switch in the header prints a label on each highlighted key, on the keyboard and on the chord cards' small diagrams. *1 3 5* shows each note's chord-tone number from the detected root (so C/E still marks C as 1 and E as 3, and extensions read 9, 11, 13); notes that don't form a recognized chord get no numbers. *C E G* shows note names, spelled by your sharps/flats choice. The lead sheet is unchanged. Your choice is remembered.
+
 **Clear keyboard** deselects all notes and empties the search box, without touching your saved chords, so you can move on to the next chord without deselecting each note by hand.
 
 **Search a chord.** Instead of clicking every note by hand, type a chord into the search box and press **Search** (or Enter). Its notes are selected on the keyboard for you, voiced starting around the middle of the range. From there it's just like a chord you clicked in by hand: click any key to add or drop a note. Tick **Add to keyboard** first if you want the searched chord added to whatever's already selected, rather than replacing it — useful for playing a bass note yourself and searching the chord that goes over it. If the text isn't a chord Pianograph recognizes, it says so and leaves the keyboard as it was.

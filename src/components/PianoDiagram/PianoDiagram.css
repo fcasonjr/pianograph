@@ -14,6 +14,7 @@
 }
 
 .mini-key-white {
+  position: relative;
   border-color: var(--key-outline-soft);
   flex: 1 1 0;
   min-width: 0;
@@ -41,4 +42,25 @@
 
 .mini-key-black.active {
   background: var(--key-black-active);
+}
+
+.mini-tone-label {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 7px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  color: #2e1065;
+  pointer-events: none;
+}
+
+.mini-key-white .mini-tone-label {
+  bottom: 2px;
+}
+
+.mini-key-black .mini-tone-label {
+  top: 3px;
+  color: #fff;
 }

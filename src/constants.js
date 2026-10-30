@@ -4,3 +4,6 @@ export const OCTAVE_COUNT = 4
 export const DEFAULT_BEATS_PER_MEASURE = 4
 export const TIME_SIGNATURE_OPTIONS = [2, 3, 4, 5, 6]
 export const MAX_CHORD_BEATS = 32
+
+// What the keyboard and chord-card diagrams print on highlighted keys.
+export const CHORD_LABEL_MODES = ['off', 'numbers', 'names']
