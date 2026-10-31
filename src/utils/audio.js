@@ -8,6 +8,56 @@ const PIANO_SAMPLES = Object.fromEntries(
   ['C', 'D#', 'F#', 'A'].flatMap((name) => [2, 3, 4, 5].map((octave) => [`${name}${octave}`, `${name.replace('#', 's')}${octave}.mp3`])).concat([['C6', 'C6.mp3']]),
 )
 
+let silentLoop = null
+
+// One second of silent 8-bit mono PCM as a WAV blob URL, so there is no large data URI in the source.
+function silentWavUrl() {
+  const sampleRate = 8000
+  const bytes = new Uint8Array(44 + sampleRate)
+  const view = new DataView(bytes.buffer)
+  const text = (offset, str) => [...str].forEach((c, i) => view.setUint8(offset + i, c.charCodeAt(0)))
+  text(0, 'RIFF')
+  view.setUint32(4, 36 + sampleRate, true)
+  text(8, 'WAVEfmt ')
+  view.setUint32(16, 16, true)
+  view.setUint16(20, 1, true) // PCM
+  view.setUint16(22, 1, true) // mono
+  view.setUint32(24, sampleRate, true)
+  view.setUint32(28, sampleRate, true) // byte rate
+  view.setUint16(32, 1, true) // block align
+  view.setUint16(34, 8, true) // bits per sample
+  text(36, 'data')
+  view.setUint32(40, sampleRate, true)
+  bytes.fill(128, 44) // 8-bit PCM silence is 128, not 0
+  return URL.createObjectURL(new Blob([bytes], { type: 'audio/wav' }))
+}
+
+// iOS treats Web Audio as "ambient" sound, which the hardware silent switch mutes. Declaring a
+// 'playback' audio session (Safari 16.4+) lifts that; where it is unsupported, a looping silent <audio>
+// element makes iOS treat the page as playing media instead. Must run inside a user gesture, and is
+// harmless on desktop and iPad. Not testable off-device.
+function unlockSilentSwitch() {
+  try {
+    if (navigator.audioSession) navigator.audioSession.type = 'playback'
+  } catch {
+    // unsupported value or API — fall through to the <audio> fallback
+  }
+  if (silentLoop) return
+  silentLoop = new Audio(silentWavUrl())
+  silentLoop.loop = true
+  silentLoop.setAttribute('playsinline', '')
+  silentLoop.play().catch(() => {
+    silentLoop = null // blocked (no gesture yet): try again on the next sound
+  })
+}
+
+// Every audio path starts here: resumes the AudioContext and unlocks sound past the iOS silent switch.
+// The unlock runs first and synchronously so it still counts as part of the tap.
+async function startAudio() {
+  unlockSilentSwitch()
+  await Tone.start()
+}
+
 let synth = null
 let piano = null
 let pianoStatus = 'idle' // 'idle' | 'loading' | 'ready' | 'failed'
@@ -44,17 +94,17 @@ function getInstrument() {
 
 export async function playChord(notes, duration = 1) {
   if (notes.length === 0) return
-  await Tone.start()
+  await startAudio()
   getInstrument().triggerAttackRelease(notes, duration)
 }
 
 export async function previewNote(note, duration = 0.5) {
-  await Tone.start()
+  await startAudio()
   getInstrument().triggerAttackRelease(note, duration)
 }
 
 export async function startNote(note) {
-  await Tone.start()
+  await startAudio()
   getInstrument().triggerAttack(note)
 }
 
@@ -73,7 +123,7 @@ export async function playProgression(chords, bpm, { onStepChange, onComplete } 
   const playable = unfoldRepeats(chords).filter((chord) => chord.notes?.length > 0)
   if (playable.length === 0) return 0
 
-  await Tone.start()
+  await startAudio()
   const instrument = getInstrument()
   const beatSeconds = 60 / bpm
 

@@ -47,6 +47,8 @@ Gotcha already hit once: the `onNotesChange` callback must be invoked from a `us
 ### Audio playback
 
 `src/utils/audio.js` plays through one of two module-level instruments behind `getInstrument()`: a `Tone.Sampler` of real piano recordings (Salamander Grand Piano, CC BY 3.0 — credited in the app footer), or the original `Tone.PolySynth` as a fallback. The samples are 17 clips (C, D#, F#, A across C2–C6, ~1.25 MB) bundled in `public/samples/salamander/` (with the license note) and served from the app's own origin, so it has no third-party dependency; `public/_headers` gives them a long Netlify cache lifetime. The Sampler pitch-shifts the notes in between. `App.jsx` calls `loadPiano()` on mount to start the download, and `getInstrument()` returns the synth until the sampler reports loaded — and forever if it fails (offline), so sound always works. `stopNote` releases on both instruments because a held MIDI note may have started on the synth just before the piano finished loading. Every audio path shares it:
+**iOS silent switch.** Every path below begins with `startAudio()` (not a bare `Tone.start()`), which first sets `navigator.audioSession.type = 'playback'` where supported and starts a looping silent `<audio>` element (a generated WAV blob, created once, retried if the first `play()` is blocked), because iOS mutes Web Audio on "silent" otherwise; the unlock runs synchronously before `await Tone.start()` so it stays inside the tap. Untestable off-device.
+
 - `previewNote` — short blip on mouse-click key activation.
 - `startNote`/`stopNote` — sustain-while-held, used by MIDI note-on/off.
 - `playChord` — one-off preview for a saved chord card's play button.
