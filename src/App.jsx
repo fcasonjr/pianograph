@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import Piano from './components/Piano/Piano'
 import Progression from './components/Progression/Progression'
 import LeadSheet from './components/LeadSheet/LeadSheet'
 import HelpDialog from './components/HelpDialog/HelpDialog'
 import SongForm from './components/SongForm/SongForm'
+import TransposeControl from './components/TransposeControl/TransposeControl'
 import { chordLabel } from './utils/chordDetection'
 import {
   loadPiano,
@@ -19,16 +20,19 @@ import {
   loadPreferences,
   loadProgression,
   loadTitle,
+  loadTranspose,
   saveBeatsPerMeasure,
   saveFormOrder,
   savePreferences,
   saveProgression,
   saveTitle,
+  saveTranspose,
 } from './utils/storage'
 import { parseImportedSong } from './utils/importProgression'
 import { parseImportedMidi } from './utils/importMidi'
 import { searchChord } from './utils/chordSearch'
 import { listSections, buildPlayOrder } from './utils/sections'
+import { keySpelling, transposeNotes, transposeProgression } from './utils/transpose'
 import { TIME_SIGNATURE_OPTIONS } from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
@@ -46,6 +50,7 @@ function App() {
   const [midiAutoAdd, setMidiAutoAdd] = useState(() => loadPreferences().midiAutoAdd)
   const [title, setTitle] = useState(() => loadTitle())
   const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
+  const [transpose, setTranspose] = useState(() => loadTranspose())
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
   const midiInputRef = useRef(null)
@@ -99,6 +104,15 @@ function App() {
   const currentLabel = chordLabel(selectedNotes, accidentals)
   const chordDisplay = currentLabel || 'Click keys to build a chord'
   const sections = listSections(progression)
+  // What the cards, lead sheet, playback and text export use. `progression` stays in the original key, so
+  // Reset (0 semitones) always gets it back; edits go through toStored/storedLabel below.
+  const viewProgression = useMemo(
+    () => transposeProgression(progression, transpose, accidentals),
+    [progression, transpose, accidentals],
+  )
+  // The keyboard shows the view's key, so notes written back to the stored progression are shifted back.
+  const storedNotes = useMemo(() => transposeNotes(selectedNotes, -transpose), [selectedNotes, transpose])
+  const storedLabel = transpose === 0 ? currentLabel : chordLabel(storedNotes, accidentals)
 
   function changeAccidentals(next) {
     setAccidentals(next)
@@ -108,6 +122,22 @@ function App() {
         entry.type === 'section' ? entry : { ...entry, label: chordLabel(entry.notes, next) },
       ),
     )
+  }
+
+  // Moves the song to a new key, and spells it the way that key is usually written (flats for Eb, sharps
+  // for E) — the Sharps/Flats switch can still override afterwards.
+  function changeTranspose(next) {
+    const delta = next - transpose
+    setTranspose(next)
+    saveTranspose(next)
+    const spelling = keySpelling(progression, next)
+    if (spelling && spelling !== accidentals) changeAccidentals(spelling)
+    // A chord being edited is on the keyboard in the old key; carry it along so Save changes still lands
+    // on the same chord.
+    if (editingChordId && selectedNotes.length > 0) {
+      setApplyPayload({ notes: transposeNotes(selectedNotes, delta), mode: 'replace' })
+      setApplySignal((n) => n + 1)
+    }
   }
 
   function changeBeatsPerMeasure(next) {
@@ -129,8 +159,8 @@ function App() {
       {
         id: crypto.randomUUID(),
         type: 'chord',
-        label: currentLabel,
-        notes: selectedNotes,
+        label: storedLabel,
+        notes: storedNotes,
         beats: beatsPerMeasure,
       },
     ])
@@ -142,7 +172,7 @@ function App() {
   function commitChord() {
     if (selectedNotes.length === 0) return
     if (editingChordId) {
-      updateChord(editingChordId, { notes: selectedNotes, label: currentLabel })
+      updateChord(editingChordId, { notes: storedNotes, label: storedLabel })
       setEditingChordId(null)
     } else {
       addChord()
@@ -152,7 +182,7 @@ function App() {
   // Loads a saved chord's notes onto the keyboard to adjust by hand; Save changes then writes them
   // back into that same card instead of adding a new one.
   function startEditChord(id) {
-    const entry = progression.find((chord) => chord.id === id && chord.type === 'chord')
+    const entry = viewProgression.find((chord) => chord.id === id && chord.type === 'chord')
     if (!entry) return
     setApplyPayload({ notes: entry.notes, mode: 'replace' })
     setApplySignal((n) => n + 1)
@@ -244,6 +274,8 @@ function App() {
     setFormOrder(song.playOrder ?? [])
     setBeatsPerMeasure(song.beatsPerMeasure)
     saveBeatsPerMeasure(song.beatsPerMeasure)
+    setTranspose(song.transpose ?? 0)
+    saveTranspose(song.transpose ?? 0)
     setImportError('')
     setEditingChordId(null)
   }
@@ -300,6 +332,8 @@ function App() {
   function clearProgression() {
     setProgression([])
     setTitle('')
+    setTranspose(0)
+    saveTranspose(0)
     setEditingChordId(null)
     setFormOrder([])
   }
@@ -341,17 +375,17 @@ function App() {
   }
 
   async function handlePlayProgression() {
-    await runPlayback(progression)
+    await runPlayback(viewProgression)
   }
 
   async function handlePlaySection(sectionId) {
-    const index = progression.findIndex((entry) => entry.id === sectionId)
+    const index = viewProgression.findIndex((entry) => entry.id === sectionId)
     if (index === -1) return
-    await runPlayback(progression.slice(index))
+    await runPlayback(viewProgression.slice(index))
   }
 
   async function handlePlayForm() {
-    await runPlayback(buildPlayOrder(progression, formOrder))
+    await runPlayback(buildPlayOrder(viewProgression, formOrder))
   }
 
   function addFormStep(sectionId, ending = null) {
@@ -456,7 +490,7 @@ function App() {
 
       {view === 'leadsheet' ? (
         <LeadSheet
-          progression={progression}
+          progression={viewProgression}
           title={title}
           beatsPerMeasure={beatsPerMeasure}
           accidentals={accidentals}
@@ -564,7 +598,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure, formOrder)}
+                  onClick={() => exportProgressionAsJson(progression, title, beatsPerMeasure, formOrder, transpose)}
                   disabled={progression.length === 0}
                   title="Save this arrangement as a file you can reopen and keep editing later"
                 >
@@ -589,7 +623,7 @@ function App() {
                 <button
                   type="button"
                   className="btn btn-ghost"
-                  onClick={() => exportProgressionAsText(progression, title)}
+                  onClick={() => exportProgressionAsText(viewProgression, title, transpose)}
                   disabled={progression.length === 0}
                   title="A plain-text chord chart for pasting elsewhere; can't be reopened here"
                 >
@@ -708,8 +742,16 @@ function App() {
               playDisabled={playbackStatus !== 'stopped'}
             />
 
+            {progression.length > 0 && (
+              <TransposeControl
+                value={transpose}
+                onChange={changeTranspose}
+                disabled={playbackStatus !== 'stopped'}
+              />
+            )}
+
             <Progression
-              chords={progression}
+              chords={viewProgression}
               onRemove={removeChord}
               onMove={moveChord}
               onDuplicate={duplicateChord}

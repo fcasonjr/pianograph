@@ -1,6 +1,7 @@
 import { CHORD_LABEL_MODES, DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
 import { cleanMarks } from './repeats'
 import { isValidBeats } from './beats'
+import { isValidTranspose } from './transpose'
 
 const STORAGE_KEY = 'pianograph:progression'
 
@@ -165,6 +166,25 @@ export function loadSheetTones() {
 export function saveSheetTones(mode) {
   try {
     localStorage.setItem(SHEET_TONES_KEY, mode)
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}
+
+const TRANSPOSE_KEY = 'pianograph:transpose'
+
+export function loadTranspose() {
+  try {
+    const stored = Number(localStorage.getItem(TRANSPOSE_KEY))
+    return isValidTranspose(stored) ? stored : 0
+  } catch {
+    return 0
+  }
+}
+
+export function saveTranspose(semitones) {
+  try {
+    localStorage.setItem(TRANSPOSE_KEY, String(semitones))
   } catch {
     // best-effort, same as saveProgression
   }

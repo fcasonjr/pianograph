@@ -1,8 +1,17 @@
 import { cleanMarks } from './repeats'
 import { downloadFile, fileBase } from './download'
 import { listSections } from './sections'
+import { formatTranspose } from './transpose'
 
-export function exportProgressionAsJson(progression, title = '', beatsPerMeasure = 4, playOrder = []) {
+// `progression` is the stored (untransposed) song, and `transpose` is saved beside it: this file is a save
+// of the document, so reopening it restores both and Reset still gets back to the original key.
+export function exportProgressionAsJson(
+  progression,
+  title = '',
+  beatsPerMeasure = 4,
+  playOrder = [],
+  transpose = 0,
+) {
   const entries = progression.map((entry) =>
     entry.type === 'section'
       ? { type: 'section', name: entry.name }
@@ -26,11 +35,19 @@ export function exportProgressionAsJson(progression, title = '', beatsPerMeasure
       return step.ending ? { section, ending: step.ending } : { section }
     })
     .filter(Boolean)
-  const data = { title: title.trim(), beatsPerMeasure, playOrder: formSteps, progression: entries }
+  const data = {
+    title: title.trim(),
+    beatsPerMeasure,
+    // Omitted at 0, so an ordinary file stays as terse as before transposition existed.
+    ...(transpose ? { transpose } : {}),
+    playOrder: formSteps,
+    progression: entries,
+  }
   downloadFile(`${fileBase(title)}.json`, JSON.stringify(data, null, 2), 'application/json')
 }
 
-export function exportProgressionAsText(progression, title = '') {
+// `progression` here is the transposed view (what the user sees); the amount is noted in the file.
+export function exportProgressionAsText(progression, title = '', transpose = 0) {
   const chords = progression
     .map((entry) => {
       if (entry.type === 'section') return `-- ${entry.name} --`
@@ -38,6 +55,8 @@ export function exportProgressionAsText(progression, title = '') {
       return `${marks.meter ? `(${marks.meter}/4) ` : ''}${marks.repeatStart ? '|: ' : ''}${marks.ending ? `[${marks.ending}.] ` : ''}${entry.label}${marks.repeatEnd ? ' :|' : ''}`
     })
     .join('  |  ')
-  const text = title.trim() ? `${title.trim()}\n\n${chords}` : chords
+  const text = [title.trim(), transpose ? `Transposed: ${formatTranspose(transpose)}` : '', chords]
+    .filter(Boolean)
+    .join('\n\n')
   downloadFile(`${fileBase(title)}.txt`, text, 'text/plain')
 }

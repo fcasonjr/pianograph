@@ -3,6 +3,7 @@ import { chordLabel } from './chordDetection'
 import { cleanMarks } from './repeats'
 import { listSections } from './sections'
 import { isValidBeats } from './beats'
+import { isValidTranspose } from './transpose'
 import { DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
 
 const MAX_TITLE_LENGTH = 120
@@ -82,5 +83,9 @@ export function parseImportedSong(text, accidentals) {
     })
     .filter(Boolean)
 
-  return { title, beatsPerMeasure, playOrder, progression }
+  // Chords in the file are the original key; `transpose` is the view that was applied on top of them.
+  const fileTranspose = !Array.isArray(data) ? data.transpose : undefined
+  const transpose = isValidTranspose(fileTranspose) ? fileTranspose : 0
+
+  return { title, beatsPerMeasure, transpose, playOrder, progression }
 }

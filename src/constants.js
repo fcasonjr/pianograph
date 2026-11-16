@@ -7,3 +7,6 @@ export const MAX_CHORD_BEATS = 32
 
 // What the keyboard and chord-card diagrams print on highlighted keys.
 export const CHORD_LABEL_MODES = ['off', 'numbers', 'names']
+
+// Transposition is limited to one octave either way.
+export const MAX_TRANSPOSE = 12

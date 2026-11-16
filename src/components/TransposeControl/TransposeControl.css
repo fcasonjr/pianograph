@@ -1,0 +1,23 @@
+.transpose-control {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.transpose-label {
+  margin-right: 4px;
+}
+
+.transpose-value {
+  min-width: 96px;
+  text-align: center;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.transpose-value.is-shifted {
+  color: var(--accent);
+}

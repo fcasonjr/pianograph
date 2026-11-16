@@ -66,6 +66,14 @@ function HelpDialog() {
           back out. Its position, length, and repeat marks stay as they were.
         </p>
 
+        <p>
+          <strong>Transpose</strong> (above the cards) moves the whole song up or down by up to an octave,
+          a semitone at a time. Your chords are never changed — the cards, lead sheet, playback and text
+          export just show the new key, and <strong>Reset</strong> returns to the original. Chords you add
+          or edit while transposed are saved so they sound the way you played them. Spelling switches to
+          flats or sharps to suit the new key; the Sharps/Flats switch can override it.
+        </p>
+
         <h3>Sections and repeats</h3>
         <p>
           <strong>Add section</strong> appends an A/B/bridge label; the § button on a chord starts one right

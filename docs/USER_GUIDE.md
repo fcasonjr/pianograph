@@ -84,6 +84,8 @@ Each saved chord is a card showing its name, a small keyboard diagram of its not
 
 **Editing a chord you've already added.** Click the chord's name or its diagram on the card, and its notes load onto the keyboard above — the card gets a dashed outline so you can see which one you're editing. Add a bass note, drop the 5th, search a different voicing, anything you'd normally do while building a chord, then press **Save changes** to write it back into that same card. Its position, length, and any repeat marks stay exactly as they were — only the notes and name change. **Cancel** backs out without saving. Editing one card while already editing another just switches to the new one; nothing is lost, since nothing is saved until you press Save changes.
 
+**Transposing the song.** The **Transpose** control above the cards moves the whole song up or down by up to 12 semitones: **−** and **+** step one semitone at a time, and **Reset** puts it back. Your chords are never changed. The cards, the lead sheet, playback and Export text all show the transposed key, so Reset always returns to exactly what you entered. Chord names are respelled to suit the new key (flats for Eb, sharps for E), guessing the key from the first chord; the **♯ Sharps / ♭ Flats** switch can override that afterwards. A chord that would run off the keyboard is moved by an octave, keeping its voicing. Chord-tone numbers don't change when you transpose, since the intervals are the same. Chords you add or edit while transposed are stored so they sound as you played them, and the control is disabled while the song is playing. The amount is remembered, saved in **Save as file** (so Open file restores it, and you can still Reset to the original key), and noted at the top of **Export text**. **Clear** resets it to the original key.
+
 **Clear** at the top of the Progression panel removes every chord and section, and clears the song title too, so you're starting a new song rather than just emptying the current one. It doesn't ask for confirmation and can't be undone, so Save as file first if you might want the song back.
 
 ## Measures and time signatures
@@ -179,7 +181,7 @@ Your song is **saved automatically** in your browser as you work, including its 
 
 To back up, move, or keep versions of a song, use the buttons in the Progression panel:
 
-- **Save as file** downloads the whole song — chords, title, time signature, everything — as a file you can come back to later. **Open file** loads one back in. If you already have chords, the app asks before replacing them. A file that can't be read is rejected with a message, and nothing changes.
+- **Save as file** downloads the whole song — chords, title, time signature, transposition, everything — as a file you can come back to later. **Open file** loads one back in. If you already have chords, the app asks before replacing them. A file that can't be read is rejected with a message, and nothing changes.
 - **Export text** downloads a plain-text version of the chord chart, such as `|: Cmaj7  |  Am7 :|`. It's one-way — there's no way to open it back up as a song.
 
 To move a song to your iPad: on the computer, choose Save as file, send the file to the iPad (AirDrop or email works), then on the iPad open Pianograph and use Open file.

@@ -10,6 +10,7 @@ How the code is put together, and the decisions behind it. For what the app does
 - [Importing MIDI files](#importing-midi-files)
 - [Input: keyboard, mouse, and MIDI](#input-keyboard-mouse-and-midi)
 - [Chord detection](#chord-detection)
+- [Transposition](#transposition)
 - [Audio](#audio)
 - [Repeats](#repeats)
 - [Song form](#song-form)
@@ -63,6 +64,7 @@ One decision shapes the whole codebase: **notes are strings in scientific pitch 
 | `src/components/Piano/` | Interactive keyboard, selection state, MIDI behavior. |
 | `src/components/PianoDiagram/` | The read-only mini keyboard, shared by the cards and the lead sheet. |
 | `src/components/ChordCard/`, `SectionMarker/`, `Progression/` | The editable progression. |
+| `src/components/TransposeControl/` | The −/+/Reset transposition control above the cards. |
 | `src/components/LeadSheet/` | Lead sheet rendering, row sizing, the image-preparation hook. |
 | `src/components/HelpDialog/` | The in-app help dialog. |
 | `src/hooks/useMidiInput.js` | Web MIDI subscription (notes and the sustain pedal). |
@@ -100,6 +102,8 @@ Everything persists to `localStorage` on every change, with all reads and writes
 | `pianograph:preferences` | `{ accidentals: 'sharps' \| 'flats', midiAutoAdd: boolean, chordLabels: 'off' \| 'numbers' \| 'names' }`. |
 | `pianograph:playOrder` | Song form: an array of section ids (see [Song form](#song-form)). |
 | `pianograph:handwrittenChords` | `'true'` or `'false'`; the lead sheet's chord-name font. |
+| `pianograph:sheetTones` | `'off'`, `'numbers'`, or `'names'`; the lead sheet's chord-tone line. |
+| `pianograph:transpose` | Whole semitones, −12 to 12 (see [Transposition](#transposition)). |
 
 `storage.js` normalizes older saved data (entries from before `type` or `beats` existed), so extend `normalizeEntry` if the shape changes.
 
@@ -122,7 +126,9 @@ Each `playOrder` step's `section` is its position among the sections in document
 
 **Open file** (`importProgression.js`, `parseImportedSong`) is the trust boundary. It also accepts older exports (a bare array, or no `beatsPerMeasure`, defaulting to 4/4). It validates every entry and throws `Error`s with user-facing messages, normalizes notes to sharp-spelled ids through Tonal, regenerates ids, and recomputes labels. Validation finishes before the "replace your progression?" prompt, so a bad file never asks. If you change the entry shape, update the exporter, this parser, and `normalizeEntry` together.
 
-**Export text** is one-way: `-- A --  |  |: Cmaj7  |  [1.] Am7 :|`.
+`transpose` (whole semitones; omitted when 0) is saved beside the *original-key* chords, and `parseImportedSong` restores it (an invalid value becomes 0), so a saved file can still Reset to the original.
+
+**Export text** is one-way (and written from the transposed view, with a `Transposed: +3 semitones` line when shifted): `-- A --  |  |: Cmaj7  |  [1.] Am7 :|`.
 
 ## Importing MIDI files
 
@@ -164,9 +170,15 @@ Notes:
 
 - Notes are sorted low to high first, because Tonal treats the first note as the bass and click order would otherwise change slash-chord names.
 - `assumePerfectFifth: true` lets voicings that omit the 5th (common in jazz) still match.
-- Key labels (`utils/chordTones.js`) number notes from the detected root from the detected name with any slash bass dropped (a slash chord's own interval list is measured from its bass); an unrecognized cluster gets no numbers, the lead sheet's diagrams show no labels, but it prints a `chordToneText` line under each chord name, controlled by its own `pianograph:sheetTones` setting.
+- Key labels (`utils/chordTones.js`) number notes from the detected root, using the detected name with any slash bass dropped (a slash chord's own interval list is measured from its bass, and Tonal leaves `type` empty for some chords such as 7#5, so don't rebuild from it). An unrecognized cluster gets no numbers. The lead sheet's diagrams show no labels, but it prints a `chordToneText` line under each chord name, controlled by its own `pianograph:sheetTones` setting.
 - Note ids are sharp-spelled, so they are respelled for the flats preference (`Note.fromMidi` versus `fromMidiSharps`) before detection.
 - `chordLabel` is the single formatter for both the live display and each saved chord's label: empty selection, a single note, unrecognized notes ("No chord match"), or the detected names joined with ` / `.
+
+## Transposition
+
+Transposition is a **view on top of the stored progression**, never a rewrite of it. `App.jsx` keeps `progression` in the key the chords were entered in and derives `viewProgression = transposeProgression(progression, transpose, accidentals)` (`utils/transpose.js`), which the cards, lead sheet, all three playback paths, and the text export use. At 0 semitones it returns the stored array itself, so Reset is exact. Labels in the view are recomputed with `chordLabel` (the stored ones are in the original key). Note ids stay sharp-spelled (midi shift plus `Note.fromMidiSharps`); a chord pushed off the keyboard range moves by whole octaves, voicing intact.
+
+Anything that writes back to the stored progression has to undo the shift, because the keyboard is in the view's key: `storedNotes`/`storedLabel` in `App.jsx` shift the selection by `-transpose` for Add chord / Save changes; `startEditChord` reads the *view* entry; and changing the transposition while a chord is being edited carries the keyboard notes along (via `applyPayload`). Controls and Save as file use the stored progression plus the `transpose` amount; Clear resets it (a new song); playback disables the control. `keySpelling` guesses sharps vs. flats for the target key from the first chord (a minor chord counts as its relative major) and `changeTranspose` applies it through the ordinary `changeAccidentals`, so the Sharps/Flats switch stays authoritative afterwards.
 
 ## Audio
 
