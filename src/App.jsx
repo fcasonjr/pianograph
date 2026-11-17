@@ -15,6 +15,7 @@ import {
   stopProgression,
 } from './utils/audio'
 import {
+  loadAutoTranspose,
   loadBeatsPerMeasure,
   loadFormOrder,
   loadPreferences,
@@ -23,6 +24,7 @@ import {
   loadTranspose,
   saveBeatsPerMeasure,
   saveFormOrder,
+  saveAutoTranspose,
   savePreferences,
   saveProgression,
   saveTitle,
@@ -32,8 +34,18 @@ import { parseImportedSong } from './utils/importProgression'
 import { parseImportedMidi } from './utils/importMidi'
 import { searchChord } from './utils/chordSearch'
 import { listSections, buildPlayOrder } from './utils/sections'
-import { keySpelling, transposeNotes, transposeProgression } from './utils/transpose'
-import { TIME_SIGNATURE_OPTIONS } from './constants'
+import {
+  buildTransposingPasses,
+  keySpelling,
+  transposeNotes,
+  transposeProgression,
+} from './utils/transpose'
+import {
+  AUTO_TRANSPOSE_STEPS,
+  MAX_AUTO_PASSES,
+  MIN_AUTO_PASSES,
+  TIME_SIGNATURE_OPTIONS,
+} from './constants'
 import { exportProgressionAsJson, exportProgressionAsText } from './utils/exportProgression'
 import './App.css'
 
@@ -51,6 +63,10 @@ function App() {
   const [title, setTitle] = useState(() => loadTitle())
   const [beatsPerMeasure, setBeatsPerMeasure] = useState(() => loadBeatsPerMeasure())
   const [transpose, setTranspose] = useState(() => loadTranspose())
+  // Practice mode: play the song repeatedly, a step higher each pass. `practiceShift` is how far the
+  // pass being played is above the starting key; it is 0 whenever playback is stopped.
+  const [autoTranspose, setAutoTranspose] = useState(() => loadAutoTranspose())
+  const [practiceShift, setPracticeShift] = useState(0)
   const [importError, setImportError] = useState('')
   const fileInputRef = useRef(null)
   const midiInputRef = useRef(null)
@@ -105,10 +121,18 @@ function App() {
   const chordDisplay = currentLabel || 'Click keys to build a chord'
   const sections = listSections(progression)
   // What the cards, lead sheet, playback and text export use. `progression` stays in the original key, so
-  // Reset (0 semitones) always gets it back; edits go through toStored/storedLabel below.
+  // Reset (0 semitones) always gets it back; edits go through storedNotes/storedLabel below. While a
+  // practice pass is playing, the view rides `practiceShift` above the user's own transposition.
+  const autoPasses = Math.min(MAX_AUTO_PASSES, Math.max(MIN_AUTO_PASSES, Math.round(autoTranspose.passes) || 0))
+  const practiceActive = autoTranspose.enabled
+  // Practice passes are spelled for the key they land in; the Sharps/Flats preference covers the rest.
+  const viewAccidentals = useMemo(
+    () => (practiceShift === 0 ? accidentals : (keySpelling(progression, transpose + practiceShift) ?? accidentals)),
+    [progression, transpose, practiceShift, accidentals],
+  )
   const viewProgression = useMemo(
-    () => transposeProgression(progression, transpose, accidentals),
-    [progression, transpose, accidentals],
+    () => transposeProgression(progression, transpose + practiceShift, viewAccidentals),
+    [progression, transpose, practiceShift, viewAccidentals],
   )
   // The keyboard shows the view's key, so notes written back to the stored progression are shifted back.
   const storedNotes = useMemo(() => transposeNotes(selectedNotes, -transpose), [selectedNotes, transpose])
@@ -138,6 +162,12 @@ function App() {
       setApplyPayload({ notes: transposeNotes(selectedNotes, delta), mode: 'replace' })
       setApplySignal((n) => n + 1)
     }
+  }
+
+  function changeAutoTranspose(patch) {
+    const next = { ...autoTranspose, ...patch }
+    setAutoTranspose(next)
+    saveAutoTranspose(next)
   }
 
   function changeBeatsPerMeasure(next) {
@@ -182,6 +212,8 @@ function App() {
   // Loads a saved chord's notes onto the keyboard to adjust by hand; Save changes then writes them
   // back into that same card instead of adding a new one.
   function startEditChord(id) {
+    // The cards are in a practice pass's key while it plays; editing then would save in the wrong one.
+    if (practiceActive && playbackStatus !== 'stopped') return
     const entry = viewProgression.find((chord) => chord.id === id && chord.type === 'chord')
     if (!entry) return
     setApplyPayload({ notes: entry.notes, mode: 'replace' })
@@ -360,32 +392,49 @@ function App() {
 
   // Shared by "Play progression", "play from this section", and "Play form" — they differ only in which
   // chords they hand over, not in how playback runs.
-  async function runPlayback(chords) {
-    if (playbackStatus !== 'stopped' || chords.length === 0) return
+  //
+  // `build` turns a progression into what one play covers (all of it, from a section on, or the song
+  // form). With auto-transpose on it is applied once per pass, each in a higher key, and the passes play
+  // back to back as one run, so pause, resume and stop work as usual.
+  async function runPlayback(build) {
+    if (playbackStatus !== 'stopped') return
+    const chords = practiceActive
+      ? buildTransposingPasses(progression, build, {
+          base: transpose,
+          step: autoTranspose.step,
+          passes: autoPasses,
+        })
+      : build(viewProgression)
+    if (chords.length === 0) return
     setPlaybackStatus('playing')
     // onComplete fires from the audio transport's own clock, not a wall-clock setTimeout, so it still
     // lands at the right moment even if playback was paused for a while in between.
     await playProgression(chords, tempo, {
-      onStepChange: setPlayingChordId,
+      onStepChange: (id, chord) => {
+        setPlayingChordId(id)
+        setPracticeShift(chord.practiceShift ?? 0)
+      },
       onComplete: () => {
         setPlaybackStatus('stopped')
         setPlayingChordId(null)
+        setPracticeShift(0)
       },
     })
   }
 
   async function handlePlayProgression() {
-    await runPlayback(viewProgression)
+    await runPlayback((p) => p)
   }
 
   async function handlePlaySection(sectionId) {
-    const index = viewProgression.findIndex((entry) => entry.id === sectionId)
+    // A section's position is the same in every transposition (only notes change), so look it up once.
+    const index = progression.findIndex((entry) => entry.id === sectionId)
     if (index === -1) return
-    await runPlayback(viewProgression.slice(index))
+    await runPlayback((p) => p.slice(index))
   }
 
   async function handlePlayForm() {
-    await runPlayback(buildPlayOrder(viewProgression, formOrder))
+    await runPlayback((p) => buildPlayOrder(p, formOrder))
   }
 
   function addFormStep(sectionId, ending = null) {
@@ -414,6 +463,7 @@ function App() {
     stopProgression()
     setPlaybackStatus('stopped')
     setPlayingChordId(null)
+    setPracticeShift(0)
   }
 
   return (
@@ -493,7 +543,7 @@ function App() {
           progression={viewProgression}
           title={title}
           beatsPerMeasure={beatsPerMeasure}
-          accidentals={accidentals}
+          accidentals={viewAccidentals}
         />
       ) : (
         <>
@@ -711,6 +761,48 @@ function App() {
                     ))}
                   </select>
                 </label>
+                <div className="auto-transpose">
+                <label className="tempo-control">
+                  <input
+                    type="checkbox"
+                    checked={autoTranspose.enabled}
+                    onChange={(e) => changeAutoTranspose({ enabled: e.target.checked })}
+                    disabled={playbackStatus !== 'stopped'}
+                  />
+                  Raise the key each pass
+                </label>
+                {autoTranspose.enabled && (
+                  <>
+                    <select
+                      className="input"
+                      aria-label="Key step per pass"
+                      value={autoTranspose.step}
+                      onChange={(e) => changeAutoTranspose({ step: Number(e.target.value) })}
+                      disabled={playbackStatus !== 'stopped'}
+                    >
+                      {AUTO_TRANSPOSE_STEPS.map((step) => (
+                        <option key={step} value={step}>
+                          {{ 1: 'a semitone', 2: 'a whole tone', 5: 'a fourth' }[step]}
+                        </option>
+                      ))}
+                    </select>
+                    <label className="tempo-control">
+                      for
+                      <input
+                        type="number"
+                        className="input"
+                        aria-label="Number of passes"
+                        min={MIN_AUTO_PASSES}
+                        max={MAX_AUTO_PASSES}
+                        value={autoTranspose.passes}
+                        onChange={(e) => changeAutoTranspose({ passes: Number(e.target.value) })}
+                        disabled={playbackStatus !== 'stopped'}
+                      />
+                      passes
+                    </label>
+                  </>
+                )}
+                </div>
               </div>
 
               <div className="section-controls">
@@ -747,6 +839,11 @@ function App() {
                 value={transpose}
                 onChange={changeTranspose}
                 disabled={playbackStatus !== 'stopped'}
+                status={
+                  playbackStatus !== 'stopped' && practiceActive
+                    ? `Pass ${practiceShift / autoTranspose.step + 1} of ${autoPasses}${practiceShift ? ` · +${practiceShift % 12 || 12} from start` : ''}`
+                    : ''
+                }
               />
             )}
 
@@ -760,7 +857,7 @@ function App() {
               onRenameSection={renameSection}
               beatsPerMeasure={beatsPerMeasure}
               chordLabels={chordLabels}
-              accidentals={accidentals}
+              accidentals={viewAccidentals}
               onPlayChord={handlePlayChord}
               playDisabled={playbackStatus !== 'stopped'}
               playingChordId={playingChordId}

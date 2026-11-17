@@ -207,3 +207,11 @@
   opacity: 0.7;
   text-align: center;
 }
+
+/* The practice-mode controls wrap together, so "for 7 passes" never strands on its own line. */
+.auto-transpose {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}

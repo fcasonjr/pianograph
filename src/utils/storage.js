@@ -1,4 +1,9 @@
-import { CHORD_LABEL_MODES, DEFAULT_BEATS_PER_MEASURE, TIME_SIGNATURE_OPTIONS } from '../constants'
+import {
+  AUTO_TRANSPOSE_STEPS,
+  CHORD_LABEL_MODES,
+  DEFAULT_BEATS_PER_MEASURE,
+  TIME_SIGNATURE_OPTIONS,
+} from '../constants'
 import { cleanMarks } from './repeats'
 import { isValidBeats } from './beats'
 import { isValidTranspose } from './transpose'
@@ -185,6 +190,32 @@ export function loadTranspose() {
 export function saveTranspose(semitones) {
   try {
     localStorage.setItem(TRANSPOSE_KEY, String(semitones))
+  } catch {
+    // best-effort, same as saveProgression
+  }
+}
+
+const AUTO_TRANSPOSE_KEY = 'pianograph:autoTranspose'
+const DEFAULT_AUTO_TRANSPOSE = { enabled: false, step: 1, passes: 12 }
+
+// Practice mode settings (raise the key each pass). `passes` is stored as typed and clamped where it is
+// used, so a half-typed number in the field isn't rewritten under the user.
+export function loadAutoTranspose() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(AUTO_TRANSPOSE_KEY) ?? '{}')
+    return {
+      enabled: parsed?.enabled === true,
+      step: AUTO_TRANSPOSE_STEPS.includes(parsed?.step) ? parsed.step : DEFAULT_AUTO_TRANSPOSE.step,
+      passes: Number.isFinite(parsed?.passes) ? parsed.passes : DEFAULT_AUTO_TRANSPOSE.passes,
+    }
+  } catch {
+    return DEFAULT_AUTO_TRANSPOSE
+  }
+}
+
+export function saveAutoTranspose(settings) {
+  try {
+    localStorage.setItem(AUTO_TRANSPOSE_KEY, JSON.stringify(settings))
   } catch {
     // best-effort, same as saveProgression
   }

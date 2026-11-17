@@ -1,6 +1,7 @@
 import { Chord, Note } from 'tonal'
 import { MAX_TRANSPOSE, START_OCTAVE, OCTAVE_COUNT } from '../constants'
 import { chordLabel, detectChord } from './chordDetection'
+import { unfoldRepeats } from './repeats'
 
 // Whether a value is a usable transposition: a whole number of semitones within one octave either way.
 export function isValidTranspose(value) {
@@ -33,6 +34,24 @@ export function transposeProgression(progression, semitones, accidentals) {
     const notes = transposeNotes(entry.notes, semitones)
     return { ...entry, notes, label: chordLabel(notes, accidentals) }
   })
+}
+
+// Chains several passes into one flat play list, each pass a step higher than the last (a practice mode:
+// run the song, or the song form, through the keys). `buildChords` turns a (transposed) progression into
+// what one pass plays, exactly as a single play would. Each pass is unfolded for its own repeats and
+// endings *here* and its repeat marks stripped, so they can't leak across the join when playback unfolds
+// the whole list again. Every chord is tagged with its pass's `practiceShift` so the UI can follow along.
+export function buildTransposingPasses(progression, buildChords, { base, step, passes }) {
+  return Array.from({ length: passes }, (_, pass) => {
+    const practiceShift = pass * step
+    const shifted = transposeProgression(progression, base + practiceShift, 'sharps')
+    return unfoldRepeats(buildChords(shifted)).map(
+      ({ repeatStart: _repeatStart, repeatEnd: _repeatEnd, ending: _ending, ...chord }) => ({
+        ...chord,
+        practiceShift,
+      }),
+    )
+  }).flat()
 }
 
 const FLAT_KEYS = new Set([1, 3, 5, 6, 8, 10]) // Db Eb F Gb Ab Bb

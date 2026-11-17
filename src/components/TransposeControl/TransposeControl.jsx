@@ -4,7 +4,7 @@ import './TransposeControl.css'
 
 // Shifts the whole song up or down in semitones. It only changes the view (see utils/transpose.js), so
 // Reset always returns to the key the chords were entered in.
-function TransposeControl({ value, onChange, disabled }) {
+function TransposeControl({ value, onChange, disabled, status = '' }) {
   return (
     <div className="transpose-control" role="group" aria-label="Transpose">
       <span className="transpose-label">Transpose</span>
@@ -40,6 +40,11 @@ function TransposeControl({ value, onChange, disabled }) {
       >
         Reset
       </button>
+      {status && (
+        <span className="transpose-status" role="status">
+          {status}
+        </span>
+      )}
     </div>
   )
 }

@@ -73,6 +73,11 @@ function HelpDialog() {
           or edit while transposed are saved so they sound the way you played them. Spelling switches to
           flats or sharps to suit the new key; the Sharps/Flats switch can override it.
         </p>
+        <p>
+          To practise through the keys, tick <strong>Raise the key each pass</strong> next to Tempo, pick
+          how far to raise it and how many passes, then play as usual (the whole song, a section, or the
+          song form). It plays again a step higher each pass and returns to your key when it stops.
+        </p>
 
         <h3>Sections and repeats</h3>
         <p>

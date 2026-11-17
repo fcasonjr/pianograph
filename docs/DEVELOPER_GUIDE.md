@@ -104,6 +104,7 @@ Everything persists to `localStorage` on every change, with all reads and writes
 | `pianograph:handwrittenChords` | `'true'` or `'false'`; the lead sheet's chord-name font. |
 | `pianograph:sheetTones` | `'off'`, `'numbers'`, or `'names'`; the lead sheet's chord-tone line. |
 | `pianograph:transpose` | Whole semitones, −12 to 12 (see [Transposition](#transposition)). |
+| `pianograph:autoTranspose` | `{ enabled, step: 1 \| 2 \| 5, passes }`; the practice mode below. |
 
 `storage.js` normalizes older saved data (entries from before `type` or `beats` existed), so extend `normalizeEntry` if the shape changes.
 
@@ -179,6 +180,10 @@ Notes:
 Transposition is a **view on top of the stored progression**, never a rewrite of it. `App.jsx` keeps `progression` in the key the chords were entered in and derives `viewProgression = transposeProgression(progression, transpose, accidentals)` (`utils/transpose.js`), which the cards, lead sheet, all three playback paths, and the text export use. At 0 semitones it returns the stored array itself, so Reset is exact. Labels in the view are recomputed with `chordLabel` (the stored ones are in the original key). Note ids stay sharp-spelled (midi shift plus `Note.fromMidiSharps`); a chord pushed off the keyboard range moves by whole octaves, voicing intact.
 
 Anything that writes back to the stored progression has to undo the shift, because the keyboard is in the view's key: `storedNotes`/`storedLabel` in `App.jsx` shift the selection by `-transpose` for Add chord / Save changes; `startEditChord` reads the *view* entry; and changing the transposition while a chord is being edited carries the keyboard notes along (via `applyPayload`). Controls and Save as file use the stored progression plus the `transpose` amount; Clear resets it (a new song); playback disables the control. `keySpelling` guesses sharps vs. flats for the target key from the first chord (a minor chord counts as its relative major) and `changeTranspose` applies it through the ordinary `changeAccidentals`, so the Sharps/Flats switch stays authoritative afterwards.
+
+### Practice mode: auto-transpose while playing
+
+With **Raise the key each pass** on, `runPlayback(build)` in `App.jsx` takes a *builder* (`(progression) => chords`: everything, `slice(index)` from a section, or `buildPlayOrder(p, formOrder)`) and `buildTransposingPasses` (`utils/transpose.js`) applies it once per pass to `transposeProgression(progression, transpose + pass * step)`. Each pass goes through `unfoldRepeats` *there* and has its repeat marks stripped, because `playProgression` unfolds the joined list again and a repeat end in one pass would otherwise loop into the previous pass. Chords are tagged with `practiceShift`; `playProgression` now passes the chord as `onStepChange`'s second argument, and the handler sets `practiceShift` state, which `viewProgression` adds to the user's `transpose` (and `viewAccidentals` re-spells for the pass's key). Everything is one `Tone.Transport` run, so pause/resume/stop and the completion callback are unchanged; both Stop and completion reset `practiceShift` to 0. Add chord / Save changes still invert only `transpose`, not `practiceShift`, and `startEditChord` refuses while a practice run plays, since the cards are then in a pass's key.
 
 ## Audio
 

@@ -143,7 +143,7 @@ export async function playProgression(chords, bpm, { onStepChange, onComplete } 
       // Tone.Draw syncs a UI update to the right visual frame near the audio event's own time,
       // rather than firing the React state update straight from the audio-scheduling callback.
       Tone.Transport.schedule((time) => {
-        Tone.Draw.schedule(() => onStepChange(chord.id), time)
+        Tone.Draw.schedule(() => onStepChange(chord.id, chord), time)
       }, offset)
     }
     elapsedBeats += beats

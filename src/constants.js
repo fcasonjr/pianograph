@@ -10,3 +10,9 @@ export const CHORD_LABEL_MODES = ['off', 'numbers', 'names']
 
 // Transposition is limited to one octave either way.
 export const MAX_TRANSPOSE = 12
+
+// Auto-transpose practice mode: how far the key rises each pass (semitones; 5 = up a fourth), and the
+// most passes one play can chain.
+export const AUTO_TRANSPOSE_STEPS = [1, 2, 5]
+export const MIN_AUTO_PASSES = 2
+export const MAX_AUTO_PASSES = 24

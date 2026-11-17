@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { chordToneLabels } from './chordTones'
 import { parseImportedSong } from './importProgression'
-import { formatTranspose, keySpelling, transposeNotes, transposeProgression } from './transpose'
+import { buildPlayOrder } from './sections'
+import { buildTransposingPasses, formatTranspose, keySpelling, transposeNotes, transposeProgression } from './transpose'
 
-const chord = (id, notes, label = id) => ({ id, type: 'chord', label, notes, beats: 4 })
+const chord = (id, notes, label = id, extra = {}) => ({ id, type: 'chord', label, notes, beats: 4, ...extra })
 
 describe('transposeNotes', () => {
   it('shifts by semitones and keeps sharp-spelled ids', () => {
@@ -91,5 +92,39 @@ describe('importing a transposed save', () => {
     expect(parseImportedSong(file({}), 'sharps').transpose).toBe(0)
     expect(parseImportedSong(file({ transpose: 40 }), 'sharps').transpose).toBe(0)
     expect(parseImportedSong(file({ transpose: 1.5 }), 'sharps').transpose).toBe(0)
+  })
+})
+
+describe('buildTransposingPasses', () => {
+  const sec = { id: 's', type: 'section', name: 'A' }
+  const song = [sec, chord('a', ['C4', 'E4', 'G4']), chord('b', ['F4', 'A4', 'C5'])]
+  const whole = (progression) => progression
+
+  it('plays the song once per pass, each a step higher, tagged with its shift', () => {
+    const list = buildTransposingPasses(song, whole, { base: 0, step: 2, passes: 3 })
+    expect(list.map((c) => c.id)).toEqual(['a', 'b', 'a', 'b', 'a', 'b'])
+    expect(list.map((c) => c.practiceShift)).toEqual([0, 0, 2, 2, 4, 4])
+    expect(list[0].notes).toEqual(['C4', 'E4', 'G4'])
+    expect(list[2].notes).toEqual(['D4', 'F#4', 'A4'])
+  })
+
+  it('starts from the current transposition and goes past an octave without leaving the keyboard', () => {
+    const list = buildTransposingPasses(song, whole, { base: 3, step: 5, passes: 4 })
+    expect(list[0].notes).toEqual(['D#4', 'G4', 'A#4']) // already +3
+    for (const c of list) for (const n of c.notes) expect(n).toMatch(/^[A-G]#?[2-5]$/)
+  })
+
+  it('resolves repeats within each pass and strips the marks, so they cannot leak across the join', () => {
+    const repeated = [chord('a', ['C4']), chord('b', ['D4'], 'b', { repeatEnd: true }), chord('c', ['E4'])]
+    const list = buildTransposingPasses(repeated, whole, { base: 0, step: 1, passes: 2 })
+    expect(list.map((c) => c.id)).toEqual(['a', 'b', 'a', 'b', 'c', 'a', 'b', 'a', 'b', 'c'])
+    expect(list.some((c) => c.repeatEnd || c.repeatStart || c.ending)).toBe(false)
+  })
+
+  it('applies the same builder as a single play, such as a song form order', () => {
+    const form = (p) => buildPlayOrder(p, [{ sectionId: 's', ending: null }, { sectionId: 's', ending: null }])
+    const list = buildTransposingPasses(song, form, { base: 0, step: 1, passes: 2 })
+    expect(list.map((c) => c.id)).toEqual(['a', 'b', 'a', 'b', 'a', 'b', 'a', 'b'])
+    expect(list.map((c) => c.practiceShift)).toEqual([0, 0, 0, 0, 1, 1, 1, 1])
   })
 })
